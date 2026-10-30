@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tidy Corners</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one-screen app. Home = room picker cards; Game = slim header + tidiness meter + full-bleed room stage */
+:root{
+  --bg:#e7eae4; --panel:#f7f8f4; --ink:#1d2925; --muted:#5b6862; --line:#cbd3cb;
+  --accent:#b5761c; --accent-soft:#f1deb8; --good:#3d7d50; --bad:#b0503a; --stage:#d9ded6;
+  --f-display:"Young Serif", Georgia, "Times New Roman", serif;
+  --f-body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#141a18; --panel:#1e2623; --ink:#e6ebe5; --muted:#9aa69f; --line:#34413c;
+  --accent:#e2a649; --accent-soft:#3a3222; --good:#6db381; --bad:#e07a62; --stage:#0f1412; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#141a18; --panel:#1e2623; --ink:#e6ebe5; --muted:#9aa69f; --line:#34413c;
+  --accent:#e2a649; --accent-soft:#3a3222; --good:#6db381; --bad:#e07a62; --stage:#0f1412; color-scheme:dark }
+
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  box-sizing:border-box;overflow:hidden;-webkit-tap-highlight-color:transparent}
+*,*::before,*::after{box-sizing:inherit}
+button{font:inherit;color:inherit}
+.btn{font-weight:600;font-size:14px;border:1px solid var(--line);background:var(--panel);color:var(--ink);
+  border-radius:999px;padding:7px 14px;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .btn.primary{color:#1b1407}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .btn.primary{color:#1b1407} }
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* ---------- Home ---------- */
+#home{height:100%;overflow-y:auto;padding-block:28px 40px}
+.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.mast h1{font-family:var(--f-display);font-weight:400;font-size:clamp(38px,7vw,64px);line-height:1;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.mast h1 span{color:var(--accent)}
+.mast p{margin:10px 0 0;max-width:58ch;color:var(--muted);font-size:16px}
+.how{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0;padding:0;list-style:none;color:var(--muted);font-size:14px}
+.how li{display:flex;align-items:center;gap:8px}
+.how b{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--ink);font-size:12px}
+.rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+.room{display:flex;flex-direction:column;text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:16px;padding:0;overflow:hidden;cursor:pointer;transition:transform .18s,border-color .18s}
+.room:hover{transform:translateY(-3px);border-color:var(--accent)}
+.room svg{width:100%;height:auto;aspect-ratio:600/640;max-width:100%;display:block;background:var(--stage)}
+.room .meta{padding:12px 14px 14px;display:flex;flex-direction:column;gap:3px}
+.room .nm{font-family:var(--f-display);font-size:20px;line-height:1.15}
+.room .sub{font-size:13px;color:var(--muted)}
+.room .row{display:flex;justify-content:space-between;align-items:center;margin-top:4px;font-size:13px}
+.lvl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--accent)}
+.stars{display:inline-flex;gap:2px}
+.stars svg{width:16px;height:16px}
+.foot{font-size:13px;color:var(--muted)}
+.cols{display:flex;flex-direction:column;gap:30px}
+.colhead{display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap;margin-bottom:12px}
+.colhead h2{font-family:var(--f-display);font-weight:400;font-size:26px;margin:0;line-height:1.1}
+.colhead span{font-size:14px;color:var(--muted)}
+
+/* ---------- Game ---------- */
+#game{height:100%;display:flex;flex-direction:column;gap:8px;padding-block:10px 12px;max-width:980px;margin:0 auto}
+.bar{display:flex;align-items:center;gap:10px}
+.bar .ttl{flex:1;min-width:0}
+.bar h2{font-family:var(--f-display);font-weight:400;font-size:22px;line-height:1.1;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .sub{font-size:12px;color:var(--muted)}
+.clock{font-variant-numeric:tabular-nums;font-weight:600;font-size:15px;padding:6px 10px;border-radius:10px;background:var(--panel);border:1px solid var(--line)}
+.meter{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.track{flex:1;min-width:120px;height:10px;border-radius:99px;background:var(--panel);border:1px solid var(--line);overflow:hidden}
+.track i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),#d9a24a);border-radius:99px;transition:width .4s cubic-bezier(.2,.8,.2,1)}
+.count{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--muted);min-width:78px}
+.tools{display:flex;gap:6px}
+.tools .btn{padding:6px 12px;font-size:13px}
+.stage{flex:1;min-height:0;position:relative;border-radius:16px;overflow:hidden;background:var(--stage);border:1px solid var(--line)}
+#svg{width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+.item{cursor:grab}
+.item.drag{cursor:grabbing}
+.ghost{opacity:0;transition:opacity .2s;pointer-events:none}
+.ghost.show{opacity:1}
+.ghost .sil{opacity:.32}
+.ghost .zone{fill:rgba(255,255,255,.18);stroke:#b5761c;stroke-width:2;stroke-dasharray:6 5}
+.ghost.bad .zone{stroke:#c0392b;fill:rgba(192,57,43,.12)}
+.glow{opacity:0;transition:opacity 1.2s}
+.lit .glow{opacity:.95}
+#warm{opacity:0;transition:opacity 1.6s;pointer-events:none}
+.lit #warm{opacity:1}
+.toast{position:absolute;left:50%;top:12px;transform:translate(-50%,-8px);background:var(--panel);color:var(--ink);border:1px solid var(--line);
+  padding:7px 14px;border-radius:99px;font-size:13px;font-weight:600;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;max-width:calc(100% - 24px);overflow:hidden;text-overflow:ellipsis}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.win{position:absolute;inset:0;display:grid;place-items:center;background:rgba(18,26,23,.38);padding:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 22px 18px;max-width:340px;width:100%;text-align:center;display:flex;flex-direction:column;gap:10px;animation:pop .35s cubic-bezier(.2,.9,.3,1.2)}
+.card h3{font-family:var(--f-display);font-weight:400;font-size:28px;margin:0;line-height:1.1}
+.card .big{display:flex;justify-content:center;gap:6px}
+.card .big svg{width:40px;height:40px}
+.card .stats{display:flex;justify-content:center;gap:18px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.card .stats b{display:block;color:var(--ink);font-size:18px}
+.card .acts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+@keyframes pop{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}
+@media (max-width:520px){
+  .bar h2{font-size:19px}
+  .tools .btn{padding:6px 10px}
+  .rooms{grid-template-columns:1fr 1fr;gap:10px}
+  .room .nm{font-size:16px}
+  .room .meta{padding:10px}
+}
+@media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
+</style>
+</head>
+<body>
+
+<div id="home">
+  <div class="wrap">
+    <header class="mast">
+      <h1>Tidy <span>Corners</span></h1>
+      <p>Somebody left the room in a state. Pick up what's lying on the floor and put each thing where it belongs until the corner looks calm again.</p>
+    </header>
+    <ol class="how">
+      <li><b>1</b>Drag anything off the floor</li>
+      <li><b>2</b>Drop it on the spot it belongs to</li>
+      <li><b>3</b>Rubbish goes in the wire bin</li>
+    </ol>
+    <div class="cols" id="rooms"></div>
+    <p class="foot">Fewer wrong drops and hints earn more stars. Works with a mouse or a finger.</p>
+  </div>
+</div>
+
+<div id="game" hidden>
+  <div class="bar">
+    <button class="btn" id="back" aria-label="Back to rooms">‹ Rooms</button>
+    <div class="ttl"><h2 id="gName">Room</h2><div class="sub" id="gSub"></div></div>
+    <div class="clock" id="clock">0:00</div>
+  </div>
+  <div class="meter">
+    <div class="track" aria-hidden="true"><i id="fill"></i></div>
+    <span class="count" id="count">0 / 0 tidy</span>
+    <div class="tools">
+      <button class="btn" id="hint">Hint</button>
+      <button class="btn" id="sound" aria-pressed="true">Sound on</button>
+      <button class="btn" id="reset">Restart</button>
+    </div>
+  </div>
+  <div class="stage">
+    <svg id="svg" viewBox="0 0 600 640" preserveAspectRatio="xMidYMid meet" aria-label="Room to tidy"></svg>
+    <div class="toast" id="toast"></div>
+    <div class="win" id="win" hidden>
+      <div class="card">
+        <div class="big" id="wStars"></div>
+        <h3 id="wTitle">Corner sorted</h3>
+        <div class="stats">
+          <div><b id="wTime">0:00</b>time</div>
+          <div><b id="wMiss">0</b>wrong drops</div>
+          <div><b id="wHint">0</b>hints</div>
+        </div>
+        <div class="acts">
+          <button class="btn" id="wRooms">Rooms</button>
+          <button class="btn" id="wAgain">Play again</button>
+          <button class="btn primary" id="wNext">Next room</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= palette & primitives ================= */
+const C={teal:'#4f7c86',clay:'#c7774f',mustard:'#dfae4b',navy:'#3e5168',sage:'#7f9c86',blush:'#e3a99a',
+  leaf:'#4f7f45',leafL:'#7fad62',pot:'#efe9df',terra:'#c46d4a',wood:'#c8a27a',woodD:'#9c7550',paper:'#f4f1ea',ink:'#3a3f44'};
+const F={body:'#f8f7f3',edge:'#d1cbc0',shade:'#e4dfd5',inner:'#ece8e1',handle:'#9fa5a9'};
+const R=(x,y,w,h,f,ex='')=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}" ${ex}/>`;
+const L=(cx,cy,rx,ry,a,f)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${f}" transform="rotate(${a} ${cx} ${cy})"/>`;
+const EDGE=`stroke="${F.edge}" stroke-width="1.2"`;
+function panel(x,y,w,h,col=F.body){return R(x,y,w,h,col,EDGE)+R(x+1,y+h-3,w-2,2.4,F.shade)}
+function handle(cx,cy,w=30){return `<path d="M${cx-w/2} ${cy} v3 h${w} v-3" fill="none" stroke="${F.handle}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`}
+function drawers(x,y,w,h,n){let s=panel(x,y,w,h);const g=4,dh=(h-g*(n+1))/n;
+  for(let i=0;i<n;i++){const yy=y+g+i*(dh+g);s+=panel(x+g,yy,w-2*g,dh)+handle(x+w/2,yy+dh*.36,Math.min(40,w*.34))}return s}
+function cabinet(x,y,w,h,hy=18){return panel(x,y,w,h)+panel(x+4,y+4,w-8,h-8)+handle(x+w/2,y+hy,Math.min(36,w*.38))}
+function grid(x,y,w,h,rows,cols,t,back,frame=F.body){
+  let s=R(x,y,w,h,frame,EDGE);const cw=(w-t*(cols+1))/cols,ch=(h-t*(rows+1))/rows,cells=[];
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const cx=x+t+c*(cw+t),cy=y+t+r*(ch+t);
+    s+=R(cx,cy,cw,ch,back)+R(cx,cy,cw,5,'rgba(0,0,0,.09)')+R(cx,cy+ch-2,cw,2,'rgba(255,255,255,.45)');
+    cells.push({x:cx+cw/2,y:cy+ch,w:cw,h:ch})}
+  return {s,cells}}
+function floatShelf(x,y,w){return R(x+4,y+10,w-8,4,'rgba(0,0,0,.10)')+panel(x,y,w,10)}
+function room(o){
+  let s=R(0,0,600,545,o.wall)+R(0,0,600,545,'url(#wallShade)');
+  if(o.ceiling){s+=R(0,0,600,24,'#a8774a');for(let x=0;x<600;x+=26)s+=`<line x1="${x}" y1="0" x2="${x}" y2="24" stroke="rgba(0,0,0,.14)"/>`;s+=R(0,22,600,4,'#efece6')}
+  s+=R(0,545,600,100,o.floor);
+  for(let i=-7;i<=7;i++)s+=`<line x1="${300+i*64}" y1="545" x2="${300+i*118}" y2="645" stroke="rgba(0,0,0,.08)" stroke-width="1.2"/>`;
+  for(const y of [565,592,626])s+=`<line x1="0" y1="${y}" x2="600" y2="${y}" stroke="rgba(0,0,0,.07)" stroke-width="1.2"/>`;
+  s+=R(0,535,600,10,o.base||'#d9d2c6')+R(0,545,600,3,'rgba(0,0,0,.08)');
+  return s}
+function curtainWindow(x,w){
+  let s=R(x,24,w,500,'#fff3d2')+`<ellipse cx="${x+60}" cy="380" rx="90" ry="150" fill="#fffbe9" opacity=".8"/>`;
+  s+=`<path d="M${x} 24 H${x+w+16} C${x+w+2} 160 ${x+w+26} 320 ${x+w+8} 528 H${x} Z" fill="#d6bd96" opacity=".9"/>`;
+  for(let i=1;i<6;i++){const fx=x+i*(w/6);s+=`<path d="M${fx} 28 C${fx-6} 200 ${fx+8} 360 ${fx} 526" stroke="rgba(110,80,40,.2)" stroke-width="3" fill="none"/>`}
+  s+=R(x,20,w+34,5,'#e9e5dd','rx="2"');return s}
+function beam(x1,x2,x3,x4){return `<path d="M${x1} 0 L${x2} 0 L${x4} 545 L${x3} 545 Z" fill="url(#beamG)"/>`}
+function pendant(x,len){return `<line x1="${x}" y1="0" x2="${x}" y2="${len}" stroke="#3a3f44" stroke-width="1.5"/><circle class="glow" cx="${x}" cy="${len+18}" r="30" fill="#ffe7a0"/><path d="M${x-22} ${len+20} Q${x-20} ${len} ${x} ${len} Q${x+20} ${len} ${x+22} ${len+20} Z" fill="#2f3b37"/><ellipse cx="${x}" cy="${len+20}" rx="22" ry="3" fill="#dfae4b"/>`}
+function wallWindow(x,y,w,h){return R(x-6,y-6,w+12,h+12,'#f7f5f0',EDGE)+R(x,y,w,h,'#cfe3e8')+`<path d="M${x} ${y+h*.75} q${w*.3} -${h*.25} ${w*.6} -${h*.08} t${w*.4} -${h*.1} V${y+h} H${x}Z" fill="#a9c79d"/>`+R(x+w/2-2,y,4,h,'#f7f5f0')+R(x,y+h/2-2,w,4,'#f7f5f0')+R(x-10,y+h+6,w+20,7,'#f1eee8',EDGE)}
+function hook(x,y){return `<circle cx="${x}" cy="${y}" r="3" fill="#b07a4a"/><path d="M${x} ${y} v8 q0 6 6 4" stroke="#b07a4a" stroke-width="2.4" fill="none"/>`}
+function bin(x,y){let s=`<path d="M${x-22} ${y-48} H${x+22} L${x+17} ${y} H${x-17} Z" fill="#e3e6e3" stroke="#7f8682" stroke-width="2.2"/>`;
+  for(let i=-2;i<=2;i++)s+=`<line x1="${x+i*8}" y1="${y-46}" x2="${x+i*6.4}" y2="${y-2}" stroke="#9aa19c" stroke-width="1.3"/>`;
+  s+=`<line x1="${x-20}" y1="${y-24}" x2="${x+20}" y2="${y-24}" stroke="#9aa19c" stroke-width="1.3"/>`+R(x-24,y-51,48,5,'#7f8682','rx="2"');return s}
+function armchair(x,y){const c='#c96f53',d='#a9583f',l='#d68266';
+  return R(x+22,y-200,136,118,c,'rx="28"')+R(x+40,y-188,100,90,'rgba(255,255,255,.06)','rx="20"')+
+    R(x+6,y-70,168,40,d,'rx="10"')+R(x+16,y-102,148,38,l,'rx="12"')+
+    R(x,y-134,36,98,d,'rx="17"')+R(x+144,y-134,36,98,d,'rx="17"')+
+    R(x+14,y-30,8,30,C.woodD,'rx="2"')+R(x+158,y-30,8,30,C.woodD,'rx="2"')}
+
+/* ================= items (origin = bottom-centre) ================= */
+const IT={
+ books:{w:56,h:52,d:v=>{const cs=[[C.teal,C.clay,C.mustard,C.navy],[C.sage,C.blush,C.navy,C.mustard],[C.clay,C.navy,C.sage,C.mustard]][v%3],hs=[48,42,52,45];let s='';
+   for(let i=0;i<4;i++){const x=-27+i*13.5;s+=R(x,-hs[i],12,hs[i],cs[i],'rx="1.5"')+R(x+2,-hs[i]+6,8,2.5,'rgba(255,255,255,.55)')+R(x+2,-10,8,2,'rgba(0,0,0,.15)')}return s}},
+ bookstack:{w:54,h:28,d:()=>R(-27,-9,54,9,C.navy,'rx="1.5"')+R(20,-8,5,7,C.paper)+R(-24,-18,48,9,C.mustard,'rx="1.5"')+R(17,-17,5,7,C.paper)+R(-25,-27,50,9,C.sage,'rx="1.5"')+R(18,-26,5,7,C.paper)},
+ plant:{w:40,h:62,d:v=>{const pc=[C.terra,C.pot,C.navy][v%3];return `<path d="M0 -24 V-40 M0 -24 L-8 -36 M0 -24 L8 -36" stroke="${C.leaf}" stroke-width="2"/>`+
+   L(-9,-42,5.5,15,-28,C.leaf)+L(9,-42,5.5,15,28,C.leaf)+L(0,-46,6,16,0,C.leafL)+L(-15,-33,4.5,11,-62,C.leafL)+L(15,-33,4.5,11,62,C.leafL)+
+   `<path d="M-13 0 L-16 -22 H16 L13 0Z" fill="${pc}" stroke="rgba(0,0,0,.08)"/>`+R(-18,-26,36,5,pc,'rx="2"')+R(-18,-26,36,5,'rgba(0,0,0,.12)','rx="2"')}},
+ trailing:{w:46,h:34,hit:[-28,-40,56,96],d:()=>{const vine=(x,len,dir)=>{let p=`<path d="M${x} -8 q${dir*9} ${len*.5} ${dir*2} ${len}" stroke="${C.leaf}" stroke-width="1.6" fill="none"/>`;
+     let k=0;for(let t=.22;t<=1.01;t+=.19){const yy=-8+len*t,xx=x+dir*Math.sin(t*3.1)*5;p+=L(xx+dir*3,yy,3.4,5.6,dir*40,k++%2?C.leaf:C.leafL)}return p};
+   return vine(-15,48,-1)+vine(-4,34,1)+vine(13,54,1)+L(-11,-24,6,9,-35,C.leaf)+L(11,-24,6,9,35,C.leafL)+L(0,-28,5,10,0,C.leaf)+
+   R(-20,-20,40,20,'#e6dccb','rx="3"')+R(-20,-20,40,4,'rgba(0,0,0,.08)')}},
+ lamp:{w:40,h:84,d:()=>`<circle class="glow" cx="13" cy="-54" r="14" fill="#ffe7a0"/><ellipse cx="0" cy="-3" rx="15" ry="4" fill="${C.ink}"/>`+
+   `<path d="M0 -4 L-8 -46 L9 -68" stroke="${C.ink}" stroke-width="3" fill="none" stroke-linejoin="round"/><circle cx="-8" cy="-46" r="3" fill="${C.ink}"/>`+
+   `<path d="M2 -80 L18 -80 L28 -60 L-6 -60 Z" fill="${C.mustard}" transform="rotate(14 10 -70)"/>`},
+ laptop:{w:76,h:47,d:()=>R(-30,-47,60,42,'#4b5158','rx="3"')+R(-27,-44,54,35,'#a7c6cf','rx="1.5"')+`<path d="M-27 -20 q14 -10 27 0 t27 -4 V-9 H-27Z" fill="#7ea8b4"/><path d="M-38 0 H38 L34 -5 H-34 Z" fill="#c3c7cc"/>`},
+ mug:{w:30,h:24,d:()=>`<path d="M10 -18 q9 0 9 7 q0 7 -9 7" stroke="${C.blush}" stroke-width="3.2" fill="none"/>`+R(-10,-24,20,24,C.blush,'rx="3"')+R(-10,-24,20,4,'rgba(0,0,0,.08)','rx="2"')},
+ pencup:{w:24,h:44,d:()=>`<g stroke-linecap="round"><line x1="-6" y1="-20" x2="-9" y2="-42" stroke="${C.mustard}" stroke-width="3.4"/><line x1="0" y1="-20" x2="1" y2="-44" stroke="${C.clay}" stroke-width="3.4"/><line x1="6" y1="-20" x2="10" y2="-38" stroke="${C.navy}" stroke-width="3.4"/></g>`+R(-11,-26,22,26,C.sage,'rx="2"')+R(-11,-26,22,3,'rgba(0,0,0,.12)')},
+ frame:{w:36,h:46,d:()=>R(-18,-46,36,46,C.woodD,'rx="2"')+R(-14,-42,28,38,'#dbe9ec')+`<path d="M-14 -4 L-4 -18 L4 -10 L9 -16 L14 -8 V-4Z" fill="${C.sage}"/><circle cx="6" cy="-32" r="4" fill="${C.mustard}"/>`},
+ basket:{w:58,h:38,d:()=>{let s=`<path d="M-29 -36 H29 L25 0 H-25 Z" fill="#cfa66d"/>`;for(let y=-30;y<0;y+=7)s+=`<line x1="-27" y1="${y}" x2="27" y2="${y}" stroke="rgba(110,70,30,.28)" stroke-width="1.6"/>`;return s+R(-30,-38,60,6,'#b88d55','rx="2"')}},
+ box:{w:54,h:38,d:v=>{const c=['#9db3a6','#d7b7a3','#a9b7c9'][v%3];return R(-27,-38,54,38,c,'rx="3"')+R(-27,-38,54,6,'rgba(0,0,0,.08)','rx="3"')+R(-8,-31,16,5,'rgba(0,0,0,.25)','rx="2.5"')+R(-12,-18,24,10,'rgba(255,255,255,.65)','rx="1.5"')}},
+ clock:{w:42,h:46,d:()=>R(-14,-7,5,7,C.navy)+R(9,-7,5,7,C.navy)+`<circle cx="0" cy="-26" r="19" fill="#fff" stroke="${C.navy}" stroke-width="3.5"/>`+
+   [0,90,180,270].map(a=>`<line x1="0" y1="-41" x2="0" y2="-38" stroke="${C.ink}" stroke-width="2" transform="rotate(${a} 0 -26)"/>`).join('')+
+   `<line x1="0" y1="-26" x2="0" y2="-37" stroke="${C.ink}" stroke-width="2.2" stroke-linecap="round"/><line x1="0" y1="-26" x2="8" y2="-21" stroke="${C.ink}" stroke-width="2.2" stroke-linecap="round"/><circle cx="0" cy="-26" r="2.2" fill="${C.clay}"/>`},
+ vase:{w:26,h:64,d:()=>`<g stroke="#b9a988" stroke-width="1.4"><line x1="-2" y1="-34" x2="-10" y2="-58"/><line x1="1" y1="-34" x2="4" y2="-64"/><line x1="3" y1="-34" x2="12" y2="-54"/></g>`+
+   L(-10,-58,4,8,-20,'#eadfc4')+L(4,-63,4,9,5,'#eadfc4')+L(12,-54,4,8,25,'#eadfc4')+
+   `<path d="M-6 0 Q-14 -10 -10 -22 Q-6 -30 -4 -36 H4 Q6 -30 10 -22 Q14 -10 6 0 Z" fill="${C.teal}"/>`},
+ globe:{w:40,h:56,d:()=>`<ellipse cx="0" cy="-2.5" rx="14" ry="3.5" fill="${C.woodD}"/>`+R(-2,-13,4,11,C.woodD)+`<circle cx="0" cy="-36" r="17" fill="#8fbcd0"/>`+
+   `<path d="M-10 -46 q6 -4 10 1 q-2 6 -8 6 q-5 -2 -2 -7Z" fill="${C.leaf}"/><path d="M3 -32 q8 -3 10 4 q-4 8 -9 5Z" fill="${C.leaf}"/><path d="M-14 -30 q4 0 5 4 q-3 2 -5 -1Z" fill="${C.leaf}"/>`+
+   `<path d="M-19 -40 A20 20 0 0 0 6 -15" stroke="${C.woodD}" stroke-width="2.6" fill="none"/>`},
+ headphones:{w:46,h:36,d:()=>`<path d="M-17 -10 C-17 -44 17 -44 17 -10" stroke="${C.navy}" stroke-width="4" fill="none"/>`+R(-23,-18,10,18,C.navy,'rx="4"')+R(13,-18,10,18,C.navy,'rx="4"')+R(-21,-14,4,10,C.clay,'rx="2"')+R(17,-14,4,10,C.clay,'rx="2"')},
+ candle:{w:20,h:31,d:()=>`<circle class="glow" cx="0" cy="-26" r="9" fill="#ffe7a0"/><path d="M0 -31 q5 6 0 9 q-5 -3 0 -9Z" fill="${C.mustard}"/><line x1="0" y1="-22" x2="0" y2="-18" stroke="${C.ink}" stroke-width="1.4"/>`+R(-9,-18,18,18,'#f1e8d8','rx="3" stroke="#d6c9b2"')},
+ wallart:{w:72,h:56,d:v=>{const fr=[C.woodD,C.navy,'#2f3436'][v%3];let a='';
+   if(v%3===0)a=`<rect x="-31" y="-22" width="62" height="17" fill="${C.sage}"/><circle cx="-6" cy="-30" r="12" fill="${C.clay}"/>`;
+   else if(v%3===1)a=`<path d="M-18 -5 V-28 A18 18 0 0 1 18 -28 V-5Z" fill="${C.mustard}"/><path d="M-8 -5 V-24 A8 8 0 0 1 8 -24 V-5Z" fill="${C.blush}"/>`;
+   else a=`<rect x="-22" y="-44" width="10" height="38" fill="${C.teal}"/><rect x="-6" y="-38" width="10" height="32" fill="${C.clay}"/><rect x="10" y="-30" width="10" height="24" fill="${C.mustard}"/>`;
+   return R(-36,-56,72,56,fr,'rx="2"')+R(-31,-51,62,46,'#faf7f0')+a}},
+ chair:{w:92,h:132,d:()=>`<g stroke="#6d7277" stroke-width="4" stroke-linecap="round"><line x1="0" y1="-12" x2="-38" y2="-4"/><line x1="0" y1="-12" x2="38" y2="-4"/><line x1="0" y1="-12" x2="-14" y2="-3"/><line x1="0" y1="-12" x2="14" y2="-3"/></g>`+
+   [-38,-14,14,38].map(x=>`<circle cx="${x}" cy="-4" r="4" fill="${C.ink}"/>`).join('')+R(-3,-48,6,36,'#8a8f94')+R(-3,-72,6,14,'#8a8f94')+
+   R(-35,-132,70,66,'#c9cdd1','rx="16"')+`<path d="M-24 -116 H24 M-26 -102 H26 M-26 -88 H26" stroke="rgba(0,0,0,.07)" stroke-width="5" stroke-linecap="round"/>`+R(-44,-60,88,17,'#b4b9bd','rx="8"')},
+ trash:{w:24,h:24,d:v=>v%3===0?`<path d="M-11 -2 L-12 -12 L-5 -20 L5 -21 L12 -13 L11 -3 L3 0 Z" fill="#f3f1ec" stroke="#b5ae9f" stroke-width="1.3"/><path d="M-6 -14 L2 -8 L7 -15 M-4 -4 L3 -9" stroke="#c4bdaf" fill="none"/>`
+   : v%3===1? R(-7,-24,14,24,C.clay,'rx="2"')+R(-7,-17,14,6,'#f3f1ec')+R(-5,-25,10,2,'#b9b9b9')
+   : `<path d="M-10 0 V-20 L-6 -23 L-2 -20 L2 -23 L6 -20 L10 -23 V0 Z" fill="${C.mustard}"/>`+R(-6,-14,12,6,'#fff','rx="2" opacity=".7"')},
+ cushion:{w:54,h:42,d:()=>R(-27,-42,54,42,C.mustard,'rx="13"')+`<path d="M-21 -21 H21" stroke="rgba(0,0,0,.14)" stroke-width="2" stroke-dasharray="3 3"/><circle cx="0" cy="-21" r="3" fill="#b8862c"/>`},
+ rug:{w:210,h:24,d:()=>{let s=`<path d="M-105 0 L105 0 L86 -22 H-86 Z" fill="#b98472"/><path d="M-97 -5 H97 M-90 -17 H90" stroke="#ead2b0" stroke-width="3"/><path d="M-40 -11 l12 -5 l12 5 l-12 5Z M16 -11 l12 -5 l12 5 l-12 5Z" fill="#ead2b0"/>`;
+   for(let x=-100;x<=100;x+=8)s+=`<line x1="${x}" y1="0" x2="${x}" y2="4" stroke="#d9bfa0" stroke-width="1.5"/>`;return s}},
+ floorplant:{w:70,h:156,d:()=>`<path d="M0 -40 V-110 M0 -50 L-24 -84 M0 -50 L24 -84" stroke="${C.leaf}" stroke-width="3"/>`+
+   L(-22,-96,14,40,-30,C.leaf)+L(22,-96,14,40,30,C.leaf)+L(0,-114,15,42,0,C.leafL)+L(-30,-68,11,28,-62,C.leafL)+L(30,-68,11,28,62,C.leafL)+
+   `<path d="M-24 0 L-28 -42 H28 L24 0Z" fill="#cfa66d"/>`+[-34,-26,-18,-10].map(y=>`<line x1="-26" y1="${y}" x2="26" y2="${y}" stroke="rgba(110,70,30,.25)" stroke-width="1.6"/>`).join('')},
+ floorlamp:{w:50,h:215,d:()=>`<circle class="glow" cx="0" cy="-176" r="26" fill="#ffe7a0"/><ellipse cx="0" cy="-3" rx="18" ry="4.5" fill="${C.ink}"/>`+R(-2,-190,4,188,C.ink)+
+   `<path d="M-14 -215 H14 L24 -184 H-24 Z" fill="#efe2c4" stroke="#d3c19c" stroke-width="1.5"/>`}
+};
+
+/* ================= rooms ================= */
+function sceneStudy(){
+  let s=room({wall:'#ece7df',floor:'#c9a982',base:'#ddd5c8'})+wallWindow(14,150,52,120)+beam(0,60,140,330)+pendant(300,40)+wallWindow(540,150,46,120);
+  s+=R(108,288,384,94,C.wood);for(let x=128;x<492;x+=24)for(let y=300;y<378;y+=18)s+=`<circle cx="${x}" cy="${y}" r="1.6" fill="rgba(80,50,20,.25)"/>`;
+  const g=grid(100,128,400,162,2,4,8,F.inner);s+=g.s;
+  s+=R(100,288,8,94,F.body,EDGE)+R(492,288,8,94,F.body,EDGE)+panel(80,380,440,14)+drawers(92,394,130,161,3)+cabinet(388,394,120,161,22)+bin(560,618);
+  const c=g.cells;
+  return {furn:s,trash:1,spill:[[110,490,380]],slots:[
+    {...c[0],kind:'books',v:0},{...c[2],kind:'bookstack'},{...c[5],kind:'plant',v:1},
+    {x:170,y:128,w:100,h:60,kind:'trailing'},
+    {x:150,y:380,w:90,h:90,kind:'lamp'},{x:300,y:380,w:120,h:80,kind:'laptop'},{x:445,y:380,w:80,h:70,kind:'pencup'},
+    {x:305,y:612,w:140,h:170,kind:'chair'},{x:560,y:618,w:84,h:92,kind:'trash',bin:true}]}}
+function sceneCorner(){
+  let s=room({wall:'#efece7',floor:'#dccbb1',ceiling:true,base:'#dcd4c8'})+curtainWindow(0,130)+beam(60,150,220,470)+hook(180,330);
+  for(let i=0;i<4;i++)s+=cabinet(200+i*60,100,60,90,76);
+  const cub=grid(200,190,240,74,1,3,8,C.wood),bc=grid(452,68,128,297,4,1,8,F.inner);
+  s+=cub.s+bc.s+panel(56,365,530,14)+drawers(66,379,124,176,4)+cabinet(456,379,124,176,22)+bin(42,620);
+  return {furn:s,trash:2,spill:[[200,440,365],[470,570,365]],slots:[
+    {x:250,y:100,w:90,h:60,kind:'trailing'},{x:400,y:100,w:70,h:56,kind:'clock'},
+    {...cub.cells[0],kind:'basket'},{...cub.cells[1],kind:'frame'},{...cub.cells[2],kind:'box',v:0},
+    {...bc.cells[0],kind:'books',v:1},{...bc.cells[1],kind:'globe'},{...bc.cells[2],kind:'plant',v:0},{...bc.cells[3],kind:'bookstack'},
+    {x:115,y:365,w:90,h:90,kind:'lamp'},{x:300,y:365,w:120,h:80,kind:'laptop'},{x:400,y:365,w:70,h:60,kind:'mug'},
+    {x:320,y:612,w:150,h:170,kind:'chair'},{x:42,y:620,w:84,h:92,kind:'trash',bin:true}]}}
+function sceneReading(){
+  let s=room({wall:'#cdd6c6',floor:'#b98d62',base:'#b7c1b0'})+wallWindow(110,70,100,150)+beam(110,220,240,520)+armchair(70,560);
+  s+=floatShelf(300,150,260)+floatShelf(320,250,240);
+  s+=panel(284,420,302,12)+drawers(290,432,145,118,2)+cabinet(435,432,145,118,22)+R(300,550,6,8,C.woodD)+R(568,550,6,8,C.woodD)+bin(560,634);
+  return {furn:s,trash:3,spill:[[300,580,420],[110,220,462]],slots:[
+    {x:122,y:330,w:76,h:62,kind:'wallart',v:0},{x:205,y:330,w:76,h:62,kind:'wallart',v:1},
+    {x:340,y:150,w:70,h:60,kind:'books',v:2},{x:430,y:150,w:60,h:56,kind:'clock'},{x:510,y:150,w:60,h:68,kind:'plant',v:2},
+    {x:365,y:250,w:50,h:42,kind:'candle'},{x:440,y:250,w:70,h:40,kind:'bookstack'},{x:520,y:250,w:60,h:60,kind:'globe'},
+    {x:320,y:420,w:70,h:90,kind:'lamp'},{x:405,y:420,w:50,h:70,kind:'vase'},{x:465,y:420,w:50,h:56,kind:'frame'},{x:540,y:420,w:50,h:40,kind:'mug'},
+    {x:160,y:462,w:110,h:60,kind:'cushion'},{x:268,y:592,w:60,h:230,kind:'floorlamp'},{x:36,y:600,w:72,h:160,kind:'floorplant'},
+    {x:310,y:638,w:280,h:50,kind:'rug',back:true},{x:560,y:634,w:84,h:92,kind:'trash',bin:true}]}}
+function sceneOffice(){
+  let s=room({wall:'#dde1e6',floor:'#a8876a',base:'#c9ced4'})+beam(380,470,330,600)+pendant(560,30);
+  const bk=grid(18,60,132,490,6,1,8,F.inner),hut=grid(170,252,400,90,1,5,8,C.wood);
+  s+=bk.s+R(178,342,384,38,'#d9c2a3')+hut.s+R(170,342,8,38,F.body,EDGE)+R(562,342,8,38,F.body,EDGE);
+  s+=floatShelf(215,200,310)+panel(160,380,420,14)+drawers(170,394,120,161,3)+cabinet(450,394,120,161,22)+bin(160,632);
+  const b=bk.cells,h=hut.cells;
+  return {furn:s,trash:3,spill:[[180,570,380],[230,510,200]],slots:[
+    {x:84,y:60,w:110,h:60,kind:'trailing'},
+    {...b[0],kind:'plant',v:2},{...b[1],kind:'books',v:1},{...b[2],kind:'globe'},{...b[3],kind:'bookstack'},{...b[4],kind:'basket'},{...b[5],kind:'box',v:1},
+    {x:300,y:118,w:76,h:62,kind:'wallart',v:2},{x:400,y:118,w:76,h:62,kind:'wallart',v:0},
+    {x:255,y:200,w:50,h:42,kind:'candle'},{x:335,y:200,w:60,h:56,kind:'clock'},{x:415,y:200,w:50,h:70,kind:'vase'},{x:485,y:200,w:70,h:60,kind:'books',v:2},
+    {...h[0],kind:'frame'},{...h[1],kind:'headphones'},{...h[2],kind:'box',v:2},{...h[4],kind:'plant',v:1},
+    {x:205,y:380,w:80,h:90,kind:'lamp'},{x:365,y:380,w:120,h:80,kind:'laptop'},{x:470,y:380,w:60,h:60,kind:'pencup'},{x:535,y:380,w:60,h:50,kind:'mug'},
+    {x:365,y:612,w:150,h:170,kind:'chair'},{x:370,y:638,w:300,h:50,kind:'rug',back:true},{x:160,y:632,w:84,h:92,kind:'trash',bin:true}]}}
+
+
+
+/* ================= helpers ================= */
+const $=id=>document.getElementById(id);
+function rngOf(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const tf=p=>`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) rotate(${p.r.toFixed(1)}) scale(${p.s.toFixed(3)})`;
+const DEFS=`<defs><linearGradient id="wallShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".05"/><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".04"/></linearGradient>
+<linearGradient id="beamG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff6d8" stop-opacity=".55"/><stop offset="1" stop-color="#fff6d8" stop-opacity="0"/></linearGradient><radialGradient id="vig" cx=".5" cy=".45" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#2a1c10" stop-opacity=".22"/></radialGradient><pattern id="stripeP" width="26" height="10" patternUnits="userSpaceOnUse"><rect width="26" height="10" fill="#f6f3ec"/><rect width="13" height="10" fill="#2a3ea6"/></pattern><pattern id="checkP" width="24" height="12" patternUnits="userSpaceOnUse"><rect width="24" height="12" fill="#f3ecdc"/><rect width="12" height="6" fill="#2f47b5"/><rect x="12" y="6" width="12" height="6" fill="#2f47b5"/></pattern><clipPath id="roomClip"><rect width="600" height="640"/></clipPath><radialGradient id="warmG"><stop offset="0" stop-color="#ffd98a" stop-opacity=".55"/><stop offset="1" stop-color="#ffd98a" stop-opacity="0"/></radialGradient></defs>`;
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const NOSH=new Set(['wallart','trailing','rug']);
+function body(k,v){const d=IT[k];return (NOSH.has(k)?'':`<ellipse cx="0" cy="0" rx="${Math.max(8,d.w*.46)}" ry="3.4" fill="rgba(40,30,20,.16)"/>`)+d.d(v)}
+function hitRect(k){const d=IT[k];const hs=d.hits||[d.hit||[-d.w/2-8,-d.h-8,d.w+16,d.h+16]];return hs.map(h=>`<rect x="${h[0]}" y="${h[1]}" width="${h[2]}" height="${h[3]}" fill="transparent"/>`).join('')}
+function makeItems(lv,sc){const rng=rngOf(lv.seed),items=[];
+  sc.slots.forEach(s=>{if(!s.bin)items.push({kind:s.kind,v:s.v||0})});
+  for(let t=0;t<sc.trash;t++)items.push({kind:'trash',v:t});
+  items.forEach(it=>{const k=it.kind;let p={x:60+rng()*480,y:578+rng()*52,r:(rng()-.5)*80,s:1};
+    if(['chair','floorplant','beanbag','pouf','sidetable','redtable'].includes(k))p.r=(rng()-.5)*36;
+    if(['shagrug','juterug','checkrug'].includes(k)){p.r=(rng()-.5)*14;p.x=170+rng()*260;p.y=626}
+    if(k==='rug'){p.r=(rng()-.5)*16;p.x=160+rng()*280;p.y=624}
+    if(k==='tree'||k==='arclamp'){const left=rng()<.5;p.r=left?-76:76;p.x=left?300+rng()*150:150+rng()*150;p.y=605+rng()*20}
+    if(k==='floorlamp'){const left=rng()<.5;p.r=left?-80:80;p.x=left?270+rng()*170:140+rng()*170;p.y=605+rng()*20}
+    const d=IT[k];if(sc.spill&&d.h<=56&&k!=='trash'&&rng()<.42){const tot=sc.spill.reduce((a,q)=>a+q[1]-q[0],0);let pick=rng()*tot,sp=sc.spill[0];for(const q of sc.spill){if(pick<q[1]-q[0]){sp=q;break}pick-=q[1]-q[0]}p={x:sp[0]+20+rng()*(sp[1]-sp[0]-40),y:sp[2],r:(rng()<.5?-1:1)*(55+rng()*35),s:1};it.surf=sp[2]}
+    else p.x=40+rng()*520;
+    it.pose=p;it.home={...p}});
+  items.sort((a,b)=>IT[b.kind].w*IT[b.kind].h-IT[a.kind].w*IT[a.kind].h);
+  items.forEach((it,i)=>it.id=i);return items}
+function staticSVG(lv,solved){const sc=lv.build(),items=makeItems(lv,sc);let back='',mid='',loose='';
+  const Ls=['','','','',''];
+  if(solved)sc.slots.forEach(s=>{if(s.bin)return;Ls[layerOf(s)]+=`<g transform="translate(${s.x} ${s.y})">${body(s.kind,s.v||0)}</g>`});
+  else items.forEach(it=>loose+=`<g transform="${tf(it.pose)}">${body(it.kind,it.v)}</g>`);
+  return `<svg viewBox="0 0 600 640" class="${solved?'lit':''}" aria-hidden="true">${DEFS}<g clip-path="url(#roomClip)">${sc.furn}${Ls[0]}${Ls[1]}${sc.front||''}${Ls[2]}${Ls[3]}${loose}<rect width="600" height="640" fill="url(#vig)"/></g></svg>`}
+function starSVG(on){return `<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" fill="${on?'var(--accent)':'none'}" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round"/></svg>`}
+function load(){try{return JSON.parse(localStorage.getItem('tidy-corners-v1')||'{}')}catch(e){return {}}}
+function save(o){try{localStorage.setItem('tidy-corners-v1',JSON.stringify(o))}catch(e){}}
+const fmt=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+
+/* ================= new items: cozy + colour pop ================= */
+function wavyRect(w,h,a,n){const P=[[-w/2,-h],[w/2,-h],[w/2,0],[-w/2,0],[-w/2,-h]];let d=`M${P[0][0]} ${P[0][1]}`;
+  for(let e=0;e<4;e++){const [x0,y0]=P[e],[x1,y1]=P[e+1],len=Math.hypot(x1-x0,y1-y0),k=Math.max(2,Math.round(len/n)),nx=-(y1-y0)/len,ny=(x1-x0)/len;
+    for(let i=0;i<k;i++){const tm=(i+.5)/k,t1=(i+1)/k,sg=i%2?1:-1;d+=` Q${(x0+(x1-x0)*tm+nx*a*sg).toFixed(1)} ${(y0+(y1-y0)*tm+ny*a*sg).toFixed(1)} ${(x0+(x1-x0)*t1).toFixed(1)} ${(y0+(y1-y0)*t1).toFixed(1)}`}}
+  return d+'Z'}
+const TXT=(x,y,t,sz,f,fam='Figtree,Arial,sans-serif',wt=800)=>`<text x="${x}" y="${y}" text-anchor="middle" font-family="${fam}" font-weight="${wt}" font-size="${sz}" fill="${f}">${t}</text>`;
+Object.assign(IT,{
+ pillow:{w:58,h:46,d:v=>{const P=[['#e9dcc6','#cdb593'],['#f4e9e2','#c94a3c'],['#cdb9e3','#b7a0d2'],['#f3ecdc','#2f47b5']][v%4];
+   let s=`<path d="M-27 0 Q-31 -23 -25 -44 Q0 -49 25 -44 Q31 -23 27 0 Q0 4 -27 0Z" fill="${P[0]}"/>`;
+   if(v%4<2)for(let x=-21;x<=21;x+=7)s+=`<line x1="${x}" y1="-42" x2="${x}" y2="-2" stroke="${P[1]}" stroke-width="${v%4?3:2}" opacity="${v%4?1:.7}"/>`;
+   if(v%4===3)s+=`<rect x="-21" y="-40" width="42" height="34" rx="3" fill="none" stroke="${P[1]}" stroke-width="1" stroke-dasharray="2 2"/>`+TXT(0,-25,'STAY',9,P[1])+TXT(0,-14,'CURIOUS',8.5,P[1]);
+   return s}},
+ throw:{w:84,h:76,d:()=>{let s=`<path d="M-40 -74 Q0 -80 40 -70 L42 -10 Q20 4 -6 -2 Q-30 6 -42 -6Z" fill="#dcc09f"/>`;
+   for(let y=-66,r=0;y<-8;y+=9,r++)for(let x=-34;x<=34;x+=9)s+=`<ellipse cx="${x+(r%2?4:0)}" cy="${y}" rx="4.2" ry="3.8" fill="#c9a983"/>`;return s}},
+ openbook:{w:76,h:16,d:v=>v%2?`<path d="M-38 0 L-30 -14 H30 L38 0Z" fill="#fdfcf8" stroke="#d8d4cc"/><rect x="6" y="-11" width="22" height="8" fill="#a9b7c9"/><line x1="-28" y1="-9" x2="-6" y2="-9" stroke="#bbb"/><line x1="-30" y1="-5" x2="-6" y2="-5" stroke="#bbb"/>`
+   :`<path d="M-38 0 L-30 -14 H30 L38 0Z" fill="#b8402f"/><path d="M-35 -2 L-28 -14 H0 V-2Z" fill="#faf5ea"/><path d="M35 -2 L28 -14 H0 V-2Z" fill="#f3ecdc"/><rect x="7" y="-11" width="18" height="7" fill="#c98a6c"/>`},
+ teacup:{w:34,h:22,d:()=>`<ellipse cx="0" cy="-2" rx="16" ry="3.2" fill="#d8c6b0"/><path d="M9 -18 q8 0 8 5 q0 5 -8 5" stroke="#e1cdb6" stroke-width="2.6" fill="none"/><path d="M-11 -21 H11 Q11 -4 0 -4 Q-11 -4 -11 -21Z" fill="#e8d7c3"/><path d="M-9 -15 H9" stroke="#b88a6a" stroke-width="1.4"/>`},
+ budvase:{w:22,h:60,d:()=>`<path d="M0 -12 C 2 -30 -2 -40 0 -52" stroke="#5f7a4a" stroke-width="1.6" fill="none"/>`+L(-4,-34,2.5,6,-40,'#5f7a4a')+`<circle cx="0" cy="-54" r="5.5" fill="#a8455a"/><circle cx="5" cy="-46" r="4" fill="#bf5a6c"/><path d="M-5 0 Q-9 -6 -6 -14 L-3 -26 H3 L6 -14 Q9 -6 5 0Z" fill="rgba(205,228,232,.55)" stroke="rgba(150,180,190,.85)" stroke-width="1.2"/>`},
+ shagrug:{w:340,h:56,d:()=>{let s='';for(let i=0;i<64;i++){const a=i/64*Math.PI*2;s+=`<circle cx="${(Math.cos(a)*166).toFixed(1)}" cy="${(-26+Math.sin(a)*27).toFixed(1)}" r="7" fill="#efe6d6"/>`}
+   return s+`<ellipse cx="0" cy="-26" rx="168" ry="28" fill="#f1e9da"/><ellipse cx="0" cy="-27" rx="130" ry="18" fill="none" stroke="rgba(160,140,110,.12)" stroke-width="6"/>`}},
+ arclamp:{w:150,h:270,hits:[[-150,-270,64,50],[-26,-22,52,26]],d:()=>`<circle class="glow" cx="-118" cy="-226" r="36" fill="#ffe7a0"/><ellipse cx="0" cy="-3" rx="20" ry="5" fill="#2f2b28"/><path d="M0 -4 C 8 -200 -40 -300 -118 -262" stroke="#2f2b28" stroke-width="3.2" fill="none"/><path d="M-142 -262 H-94 L-90 -228 H-146 Z" fill="#f1dfbd" stroke="#dcc49b"/>`},
+ tree:{w:84,h:176,d:()=>{let s=`<path d="M0 -40 C -4 -90 6 -120 0 -165 M0 -100 L22 -130 M0 -80 L-24 -112" stroke="#6b5a45" stroke-width="2.5" fill="none"/>`;const r=rngOf(5);
+   for(let i=0;i<54;i++){const a=r()*Math.PI*2,rr=Math.sqrt(r()),cx=Math.cos(a)*36*rr,cy=-122+Math.sin(a)*46*rr;s+=L(cx.toFixed(1),cy.toFixed(1),2.4,6.2,(r()*180-90).toFixed(0),r()<.5?'#5f7a4a':'#7f9763')}
+   return s+`<path d="M-20 0 L-23 -40 H23 L20 0Z" fill="#f2efe9" stroke="#ddd6cb"/>`}},
+ orchid:{w:40,h:84,d:()=>`<path d="M0 -24 C -2 -60 10 -78 20 -80" stroke="#5f7a4a" stroke-width="2" fill="none"/>`+[[4,-62],[10,-72],[18,-78],[-1,-50]].map(([x,y])=>L(x,y,5.5,4.2,20,'#8a3f74')+`<circle cx="${x}" cy="${y}" r="1.6" fill="#f3d36b"/>`).join('')+L(-10,-28,10,4,-20,'#4f7f45')+L(9,-28,10,4,20,'#4f7f45')+`<path d="M-12 0 L-14 -24 H14 L12 0Z" fill="#efe9df"/>`},
+ pouf:{w:116,h:72,d:()=>{let s=R(-56,-72,112,72,'#f2ede4','rx="26"');for(let x=-44;x<=44;x+=11)s+=`<path d="M${x} -66 Q${(x*1.08).toFixed(1)} -36 ${x} -6" stroke="#ddd3c3" stroke-width="3" fill="none"/>`;return s}},
+ poster:{w:62,h:84,d:v=>R(-31,-84,62,84,'#f7f3ea','stroke="#e2dccf"')+(v%2?`<path d="M-20 -70 q10 -6 16 4 q4 14 -6 22 q12 0 18 10 q-14 4 -22 -2 q-6 10 -6 16 q-6 -14 0 -26 q-8 -10 0 -24Z" fill="#26231f"/><path d="M4 -40 q12 -16 22 -6 q-10 2 -12 14Z" fill="#26231f"/>`
+   :R(-26,-79,52,56,'#26231f')+`<path d="M-10 -30 q-14 -24 2 -44 q8 18 22 4 q6 26 -24 40Z" fill="#d24b4f"/><path d="M4 -70 l6 30" stroke="#e8a0a2" stroke-width="2"/>`)+`<line x1="-22" y1="-14" x2="22" y2="-14" stroke="#9a948a" stroke-width="1.5"/><line x1="-16" y1="-9" x2="16" y2="-9" stroke="#9a948a" stroke-width="1.5"/>`},
+ beanbag:{w:240,h:156,d:()=>`<path d="M-112 0 Q-130 -70 -96 -118 Q-50 -162 0 -150 Q60 -162 98 -118 Q130 -70 112 0 Q0 10 -112 0Z" fill="url(#stripeP)" stroke="#23338a" stroke-width="2"/><path d="M-82 -40 Q0 -72 82 -40 Q60 -10 0 -12 Q-60 -10 -82 -40Z" fill="rgba(20,30,90,.2)"/><path d="M-96 -118 Q-50 -150 0 -140" stroke="rgba(255,255,255,.35)" stroke-width="4" fill="none"/>`},
+ sidetable:{w:84,h:88,d:()=>{let s=`<g stroke="#c7a35a" stroke-width="3"><line x1="-28" y1="-78" x2="24" y2="0"/><line x1="28" y1="-78" x2="-24" y2="0"/><line x1="-26" y1="-78" x2="-26" y2="0"/><line x1="26" y1="-78" x2="26" y2="0"/></g><ellipse cx="0" cy="-80" rx="40" ry="8" fill="#f1ede6" stroke="#d7d0c3"/>`;
+   const r=rngOf(3);for(let i=0;i<16;i++)s+=`<circle cx="${(r()*64-32).toFixed(1)}" cy="${(-80+r()*8-4).toFixed(1)}" r="1.5" fill="${['#d24b4f','#2f47b5','#dfae4b','#7f9c86'][i%4]}"/>`;return s}},
+ mushlamp:{w:38,h:50,d:()=>`<circle class="glow" cx="0" cy="-30" r="20" fill="#ffe7a0"/><ellipse cx="0" cy="-3" rx="11" ry="3" fill="#2f47b5"/><rect x="-2" y="-30" width="4" height="27" fill="#2f47b5"/><path d="M-18 -30 A18 18 0 0 1 18 -30 Z" fill="#2f47b5"/><path d="M-12 -38 A12 12 0 0 1 -3 -45" stroke="rgba(255,255,255,.45)" stroke-width="3" fill="none"/>`},
+ redtable:{w:70,h:92,d:()=>`<path d="M-26 0 H26 Q32 -14 14 -26 Q30 -38 16 -46 Q30 -54 14 -66 Q32 -80 28 -88 H-28 Q-32 -80 -14 -66 Q-30 -54 -16 -46 Q-30 -38 -14 -26 Q-32 -14 -26 0Z" fill="#c8322a"/><ellipse cx="0" cy="-88" rx="30" ry="6" fill="#dc4a3f"/><path d="M-8 -82 Q-4 -60 -10 -30" stroke="rgba(255,255,255,.3)" stroke-width="4" fill="none"/>`},
+ checkrug:{w:220,h:36,d:()=>`<path d="M-110 0 H110 L94 -36 H-94Z" fill="url(#checkP)" stroke="#f3ecdc" stroke-width="3"/>`},
+ juterug:{w:380,h:52,d:()=>{let s=`<path d="M-190 0 H190 L160 -52 H-160Z" fill="#c9a776"/>`;for(let y=-46;y<0;y+=6)s+=`<line x1="-188" y1="${y}" x2="188" y2="${y}" stroke="rgba(120,85,40,.16)" stroke-width="2"/>`;return s}},
+ mirror:{w:56,h:98,d:()=>`<path d="${wavyRect(56,98,4,12)}" fill="#2f47b5"/><g transform="translate(0 -8)"><path d="${wavyRect(40,82,3,12)}" fill="#dfe9ee"/></g><path d="M-10 -70 L4 -84 M-12 -56 L8 -76" stroke="#fff" stroke-width="3" opacity=".7"/>`},
+ quote:{w:58,h:70,d:()=>R(-29,-70,58,70,'#1f1f1f','rx="1"')+R(-25,-66,50,62,'#fbfaf6')+['good','things','take','time'].map((t,i)=>TXT(0,-48+i*12,t,10.5,'#1f1f1f','Georgia,serif',700)).join('')},
+ hand:{w:28,h:50,d:()=>{const c='#efe6d6',e='stroke="#d6cab3" stroke-width="1"';return R(-3,-50,5,26,c,'rx="2.5" '+e)+R(3,-47,5,23,c,'rx="2.5" '+e)+R(-9,-46,5,22,c,'rx="2.5" '+e)+R(8,-41,5,18,c,'rx="2.5" '+e)+L(-12,-24,3,9,-35,c)+R(-10,-30,22,24,c,'rx="7" '+e)+R(-6,-8,14,8,c,e)}},
+ pleated:{w:96,h:70,hits:[[-50,-68,100,76]],d:()=>{let s=`<circle class="glow" cx="0" cy="6" r="34" fill="#ffe7a0"/><line x1="0" y1="-62" x2="0" y2="-280" stroke="#3a3f44" stroke-width="1.5"/><path d="M-14 -62 H14 L46 0 H-46Z" fill="#f4efe2"/>`;
+   for(let i=-6;i<=6;i++)s+=`<line x1="${(i*2.3).toFixed(1)}" y1="-62" x2="${(i*7.6).toFixed(1)}" y2="0" stroke="#ddd3bd" stroke-width="1.4"/>`;return s}}
+});
+{const mugD=IT.mug.d;IT.mug.d=v=>v%2?`<path d="M10 -18 q9 0 9 7 q0 7 -9 7" stroke="#2f47b5" stroke-width="3.2" fill="none"/>`+R(-10,-24,20,24,'#f6f3ec','rx="3"')+[-7,-1,5].map(x=>R(x,-24,3,24,'#2f47b5')).join(''):mugD(v)}
+{const plD=IT.plant.d;IT.plant.d=v=>v%4===3?plD(1)+[-11,-5,1,7].map(x=>R(x,-22,3,22,'#2f47b5')).join(''):plD(v%3)}
+{const waD=IT.wallart.d;IT.wallart.d=v=>{if(v!==3)return waD(v);let s=R(-36,-56,72,56,'#1d1d1d','rx="1"');for(let r=0;r<4;r++)for(let c=0;c<6;c++)s+=R(-31+c*10.3,-51+r*11.5,10.3,11.5,(r+c)%2?'#1d1d1d':'#f5f1e8');return s}}
+['shagrug','juterug','checkrug','poster','mirror','quote','pleated'].forEach(k=>NOSH.add(k));
+
+/* ================= cozy furniture ================= */
+function dots(x,y,w,h,n,seed,c){const r=rngOf(seed);let s='';for(let i=0;i<n;i++)s+=`<circle cx="${(x+6+r()*(w-12)).toFixed(1)}" cy="${(y+6+r()*(h-12)).toFixed(1)}" r="${(1+r()*1.5).toFixed(1)}" fill="${c}"/>`;return s}
+function boucle(x,y){const c='#f3eee5',d='#e1d8c9';
+  return R(x+14,y-196,192,100,c,'rx="46"')+dots(x+30,y-190,160,80,40,1,d)+
+    R(x,y-138,58,108,c,'rx="28"')+dots(x+8,y-130,42,90,18,2,d)+R(x+162,y-138,58,108,c,'rx="28"')+dots(x+170,y-130,42,90,18,3,d)+
+    R(x+40,y-116,140,44,d,'rx="20"')+R(x+40,y-120,140,40,c,'rx="20"')+R(x+6,y-80,208,62,c,'rx="24"')+dots(x+16,y-76,190,54,40,4,d)+
+    R(x+24,y-20,10,20,'#3a332c','rx="2"')+R(x+186,y-20,10,20,'#3a332c','rx="2"')}
+function coffee(cx,y){return R(cx-92,y-70,62,70,'#2f2b28','rx="8"')+R(cx+30,y-70,62,70,'#2f2b28','rx="8"')+R(cx-124,y-94,248,26,'#f4f1ec','rx="13" stroke="#ddd6cb" stroke-width="1.2"')+R(cx-118,y-76,236,5,'rgba(0,0,0,.06)','rx="3"')}
+function sheer(x){let s=R(x,24,600-x,516,'#fdf7e8')+`<ellipse cx="${x+50}" cy="300" rx="42" ry="200" fill="#fff" opacity=".6"/>`;
+  for(let i=0;i<8;i++){const fx=x+8+i*((600-x)/8);s+=`<path d="M${fx.toFixed(1)} 26 C${(fx-5).toFixed(1)} 200 ${(fx+6).toFixed(1)} 380 ${fx.toFixed(1)} 538" stroke="rgba(190,178,158,.35)" stroke-width="6" fill="none"/>`}
+  return s+R(x-6,20,600-x+6,5,'#d8d0c4')}
+function acUnit(x,y){return `<path d="M${x+20} ${y+30} q-14 30 -6 80" stroke="#e4ded3" stroke-width="5" fill="none"/>`+R(x,y,170,34,'#f7f6f2','rx="6" stroke="#ddd6cb"')+`<line x1="${x+10}" y1="${y+25}" x2="${x+160}" y2="${y+25}" stroke="#cfc8bc" stroke-width="2"/>`}
+function sceneCozy(t){
+  const night=t===4;let s=room({wall:night?'#e3d3bf':'#efe6da',floor:'#c8ae8b',base:'#e4d9c9'});
+  s+=t>=3?sheer(500):wallWindow(522,110,54,170);
+  if(t>=4)s+=acUnit(300,34);
+  s+=beam(330,460,300,560);
+  let bk=null;if(t>=2){bk=grid(24,290,140,255,4,1,8,'#8e6942','#c39a6b');s+=bk.s}
+  s+=boucle(180,556)+bin(100,638);
+  const pX=t>=4?318:290;
+  const sl=[{x:pX,y:446,w:70,h:62,kind:'pillow',v:0},{x:372,y:494,w:86,h:80,kind:'throw'},
+    {x:244,y:548,w:78,h:40,kind:'openbook',v:0},{x:300,y:548,w:40,h:66,kind:'budvase'},{x:342,y:548,w:38,h:44,kind:'candle'},{x:388,y:548,w:44,h:40,kind:'teacup'},
+    {x:300,y:644,w:340,h:62,kind:'shagrug',layer:0},{x:100,y:638,w:84,h:92,kind:'trash',bin:true}];
+  if(t>=2)sl.push({...bk.cells[0],kind:'books',v:0},{...bk.cells[1],kind:'books',v:2},{...bk.cells[2],kind:'bookstack'},
+    {x:520,y:596,w:76,h:120,kind:'arclamp',layer:2},{x:255,y:330,w:68,h:92,kind:'poster',v:0});
+  if(t>=3)sl.push({x:420,y:286,w:68,h:92,kind:'poster',v:1},{x:432,y:556,w:84,h:176,kind:'tree',layer:2},{x:546,y:638,w:116,h:78,kind:'pouf'},
+    {x:56,y:290,w:46,h:52,kind:'frame'},{x:132,y:290,w:48,h:88,kind:'orchid'});
+  if(t>=4)sl.push({...bk.cells[3],kind:'books',v:1},{x:262,y:446,w:62,h:62,kind:'pillow',v:2},{x:546,y:566,w:60,h:50,kind:'headphones',after:'pouf'},{x:94,y:290,w:30,h:40,kind:'candle'});
+  return {furn:s,front:coffee(300,632),trash:[1,2,2,3][t-1],spill:[[190,410,548]],slots:sl}}
+
+/* ================= colour pop furniture ================= */
+function bigWindow(x,y,w,h){let s=R(x,y-14,w+30,h+30,'#c9935a')+R(x,y,w,h,'#22262a')+R(x+8,y+8,w-16,h-16,'#d8ead2');const r=rngOf(21);
+  for(let i=0;i<26;i++)s+=`<circle cx="${(x+8+r()*(w-16)).toFixed(1)}" cy="${(y+h*.35+r()*h*.6).toFixed(1)}" r="${(14+r()*22).toFixed(1)}" fill="${['#7fae62','#5f8f4e','#9cc58a','#4f7f45'][i%4]}" opacity=".9"/>`;
+  s+=R(x,y,8,h,'#22262a')+R(x+w-8,y,8,h,'#22262a')+R(x,y,w,8,'#22262a')+R(x,y+h-8,w,8,'#22262a')+R(x+w*.56,y,7,h,'#22262a')+R(x+w*.56-8,y+h*.48,4,22,'#3a3f44','rx="2"');
+  return s+R(x,y+h+2,w+40,12,'#c9935a')+R(x,y+h+12,w+40,3,'rgba(0,0,0,.12)')}
+function blueShelf(x,y,w){return `<path d="M${x+20} ${y+7} v14 l14 -14Z M${x+w-20} ${y+7} v14 l-14 -14Z" fill="#e8e6e0"/>`+R(x,y,w,7,'#2f47b5','rx="1.5"')}
+function redCube(x,y,sz){return {s:R(x,y,sz,sz,'#d23a2c','rx="2"')+R(x+5,y+5,sz-10,sz-10,'#b02c22'),cell:{x:x+sz/2,y:y+sz-5,w:sz-10,h:sz-10}}}
+function scenePop(t){
+  let s=room({wall:'#f3efe7',floor:'#b98b5d',base:'#e9e3d9'})+bigWindow(0,40,176,428)+beam(40,170,240,520);
+  let c1=null,c2=null,bc=null;
+  if(t>=3){s+=blueShelf(250,140,200)+blueShelf(250,205,200);c1=redCube(262,256,66);s+=c1.s}
+  if(t>=4){bc=grid(476,150,124,250,3,1,8,F.inner);s+=bc.s+cabinet(476,400,124,145,20);c2=redCube(404,286,66);s+=c2.s}
+  s+=bin(40,636);
+  const sl=[{x:320,y:644,w:380,h:58,kind:'juterug',layer:0},{x:268,y:642,w:220,h:42,kind:'checkrug',layer:1},{x:300,y:600,w:240,h:160,kind:'beanbag',layer:2},
+    {x:246,y:500,w:62,h:56,kind:'pillow',v:1,after:'beanbag'},{x:356,y:504,w:62,h:56,kind:'pillow',v:3,after:'beanbag'},
+    {x:472,y:632,w:40,h:40,kind:'mug',v:1},{x:416,y:640,w:80,h:30,kind:'openbook',v:1},{x:40,y:636,w:84,h:92,kind:'trash',bin:true}];
+  if(t>=2)sl.push({x:112,y:610,w:90,h:92,kind:'sidetable',layer:2},{x:112,y:528,w:48,h:54,kind:'mushlamp',after:'sidetable'},
+    {x:532,y:612,w:76,h:96,kind:'redtable',layer:2},{x:532,y:524,w:34,h:40,kind:'candle',after:'redtable'},
+    {x:302,y:492,w:62,h:56,kind:'pillow',v:2,after:'beanbag'},{x:232,y:330,w:62,h:104,kind:'mirror'});
+  if(t>=3)sl.push({x:290,y:140,w:70,h:58,kind:'books',v:0},{x:412,y:140,w:62,h:44,kind:'trailing'},{x:300,y:205,w:66,h:36,kind:'bookstack'},{x:400,y:205,w:52,h:64,kind:'plant',v:3},
+    {x:372,y:340,w:64,h:76,kind:'quote'},{...c1.cell,kind:'books',v:2},{x:232,y:430,w:76,h:60,kind:'wallart',v:3},{x:150,y:470,w:48,h:66,kind:'plant',v:0});
+  if(t>=4)sl.push({...bc.cells[0],kind:'books',v:1},{...bc.cells[1],kind:'plant',v:2},{...bc.cells[2],kind:'hand'},{...c2.cell,kind:'bookstack'},
+    {x:512,y:150,w:40,h:66,kind:'vase'},{x:568,y:150,w:44,h:60,kind:'globe'},{x:360,y:96,w:100,h:76,kind:'pleated'});
+  return {furn:s,trash:[1,2,2,3][t-1],spill:[[10,200,470]],slots:sl}}
+
+const COLS=[{name:'Desk Corners',sub:'Built-in desks, hutches and bookcases'},{name:'Cozy Nooks',sub:'Boucle, candlelight and a fluffy rug'},{name:'Colour Pop',sub:'Stripes, checks and bold blue shelves'}];
+const TIERS=['Easy','Medium','Hard','Expert'];
+const LEVELS=[
+  {id:'study',col:0,name:'Study Nook',sub:'A desk with a hutch',build:sceneStudy,seed:11,guided:true,tier:'Easy'},
+  {id:'corner',col:0,name:'Corner Desk',sub:'Cabinets, cubbies and a tall bookcase',build:sceneCorner,seed:29,guided:true,tier:'Medium'},
+  {id:'reading',col:0,name:'Reading Corner',sub:'Armchair, shelves and a sideboard',build:sceneReading,seed:47,guided:false,tier:'Hard'},
+  {id:'office',col:0,name:'Home Office',sub:'Every surface needs styling',build:sceneOffice,seed:83,guided:false,tier:'Expert'},
+  ...[['Tea for One','A chair, a table and a rug'],['Reading Light','A bookcase and an arc lamp join in'],['Sheer Afternoon','Curtains, a pouf and an olive tree'],['Lamp-lit Evening','Every last cozy detail']]
+    .map(([n,sb],i)=>({id:'cozy'+(i+1),col:1,name:n,sub:sb,build:()=>sceneCozy(i+1),seed:101+i*17,guided:i<2,tier:TIERS[i]})),
+  ...[['Bean Bag Day','Rugs, a bean bag and cushions'],['Sunny Window','Side tables, a lamp and a wavy mirror'],['Shelf Life','Blue shelves and red cubes'],['Full Colour','Bookcase, pendant and everything else']]
+    .map(([n,sb],i)=>({id:'pop'+(i+1),col:2,name:n,sub:sb,build:()=>scenePop(i+1),seed:211+i*13,guided:i<2,tier:TIERS[i]}))];
+const NAMES={beanbag:'bean bag',sidetable:'side table',redtable:'red side table',pouf:'pouf'};
+const GLOW={lamp:[50,190,170,0],floorlamp:[170,190,170,0],candle:[24,90,80,0],arclamp:[245,210,190,-118],mushlamp:[30,150,130,0],pleated:[-10,230,210,0]};
+const BIGZ=new Set(['chair','rug','floorlamp','floorplant','beanbag','shagrug','juterug','checkrug','arclamp','tree','pouf','sidetable','redtable']);
+const layerOf=s=>s.layer??(s.back?0:3);
+
+/* ================= sound ================= */
+let AC=null,soundOn=true;
+function blip(f1,f2,dur=.12,type='sine',vol=.12){if(!soundOn)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+  const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime;o.type=type;o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+dur)}catch(e){}}
+
+const PENTA=[523,587,659,784,880,1047,1175,1319,1568,1760];
+function chime(n){const f=PENTA[(n-1)%PENTA.length];blip(f,f*1.004,.32,'sine',.1);setTimeout(()=>blip(f*1.5,f*1.5,.22,'sine',.035),60)}
+/* ================= home ================= */
+function renderHome(){const best=load();$('rooms').innerHTML=COLS.map((c,ci)=>`<section class="col"><div class="colhead"><h2>${c.name}</h2><span>${c.sub}</span></div><div class="rooms">`+LEVELS.map((lv,i)=>lv.col!==ci?'':card(lv,i,best)).join('')+`</div></section>`).join('');
+  $('rooms').querySelectorAll('.room').forEach(el=>el.onclick=()=>startLevel(+el.dataset.i))}
+function card(lv,i,best){{const b=best[lv.id];const sc=lv.build();
+  const n=sc.slots.filter(s=>!s.bin).length+sc.trash;
+  return `<button class="room" data-i="${i}">${staticSVG(lv,!!b)}<div class="meta"><span class="lvl">${lv.tier}</span><span class="nm">${lv.name}</span><span class="sub">${n} things to sort${lv.guided?' · spots light up':''}</span>
+  <div class="row"><span class="stars">${[1,2,3].map(k=>starSVG(b&&b.stars>=k)).join('')}</span><span>${b?'Best '+fmt(b.time):'Not played'}</span></div></div></button>`}}
+
+/* ================= game ================= */
+let G=null,timer=null;
+const svg=$('svg');
+function startLevel(i){
+  const lv=LEVELS[i],sc=lv.build();sc.slots.forEach(s=>s.filled=false);
+  const items=makeItems(lv,sc);
+  G={i,lv,sc,items,done:0,total:items.length,miss:0,hints:0,t:0,running:false,won:false,drag:null};
+  let ghosts='';sc.slots.forEach((s,si)=>{ghosts+=`<g class="ghost" data-s="${si}"><rect class="zone" x="${s.x-s.w/2}" y="${s.y-s.h}" width="${s.w}" height="${s.h}" rx="8"/>${s.bin?'':`<g class="sil" transform="translate(${s.x} ${s.y})">${IT[s.kind].d(s.v||0)}</g>`}</g>`});
+  const warm=sc.slots.filter(s=>GLOW[s.kind]).map(s=>{const g=GLOW[s.kind];return `<ellipse cx="${s.x+g[3]}" cy="${s.y-g[0]}" rx="${g[1]}" ry="${g[2]}" fill="url(#warmG)"/>`}).join('');
+  svg.classList.remove('lit');
+  svg.innerHTML=DEFS+`<g clip-path="url(#roomClip)"><g id="furn">${sc.furn}</g><g id="ghosts">${ghosts}</g><g id="p0"></g><g id="p1"></g><g id="front">${sc.front||''}</g><g id="p2"></g><g id="p3"></g><g id="loose"></g><g id="fx"></g><g id="warm">${warm}</g>`+'<rect width="600" height="640" fill="url(#vig)" pointer-events="none"/></g>';
+  const loose=svg.querySelector('#loose');
+  loose.innerHTML=items.map(it=>`<g class="item" data-id="${it.id}" transform="${tf(it.pose)}">${hitRect(it.kind)}${body(it.kind,it.v)}</g>`).join('');
+  items.forEach(it=>it.el=loose.querySelector(`[data-id="${it.id}"]`));
+  $('gName').textContent=lv.name;$('gSub').textContent=lv.tier+' · '+lv.sub;
+  $('win').hidden=true;$('home').hidden=true;$('game').hidden=false;
+  clearInterval(timer);$('clock').textContent='0:00';updateMeter();
+  toast(lv.guided?'Pick something up. Its spot will light up.':'No glowing spots here. Use Hint if you get stuck.');
+}
+function updateMeter(){$('fill').style.width=(G.done/G.total*100)+'%';$('count').textContent=`${G.done} / ${G.total} tidy`}
+function startClock(){if(G.running)return;G.running=true;const t0=Date.now()-G.t*1000;timer=setInterval(()=>{G.t=Math.floor((Date.now()-t0)/1000);$('clock').textContent=fmt(G.t)},500)}
+let toastT;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2200)}
+function apply(it){it.el.setAttribute('transform',tf(it.pose))}
+function tween(it,to,ms,done){if(RM)ms=1;const from={...it.pose},t0=performance.now();it.tw=(it.tw||0)+1;const my=it.tw;
+  (function f(t){if(it.tw!==my)return;let k=Math.min(1,(t-t0)/ms);k=1-Math.pow(1-k,3);for(const key in to)it.pose[key]=from[key]+(to[key]-from[key])*k;apply(it);
+    if(k<1)requestAnimationFrame(f);else done&&done()})(t0)}
+function pt(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse())}
+const avail=s=>!s.after||G.sc.slots.some(o=>o.kind===s.after&&o.filled);
+const ghostEl=si=>svg.querySelector(`.ghost[data-s="${si}"]`);
+function showGhosts(pred){G.sc.slots.forEach((s,si)=>ghostEl(si).classList.toggle('show',pred(s)))}
+
+svg.addEventListener('pointerdown',e=>{
+  if(!G||G.won)return;const el=e.target.closest('.item');if(!el)return;
+  const it=G.items[+el.dataset.id];if(it.placed)return;
+  e.preventDefault();svg.setPointerCapture(e.pointerId);startClock();
+  const p=pt(e);G.drag={it,off:{x:p.x-it.pose.x,y:p.y-it.pose.y},pid:e.pointerId};
+  it.start={...it.pose};el.classList.add('drag');el.parentNode.appendChild(el);
+  tween(it,{r:0,s:1.08},140);blip(520,700,.06,'triangle',.06);
+  if(G.lv.guided||G.hintOn)showGhosts(s=>!s.filled&&s.kind===it.kind&&avail(s));
+});
+svg.addEventListener('pointermove',e=>{const d=G&&G.drag;if(!d||e.pointerId!==d.pid)return;const p=pt(e);
+  d.it.pose.x=Math.max(10,Math.min(590,p.x-d.off.x));d.it.pose.y=Math.max(30,Math.min(660,p.y-d.off.y));apply(d.it)});
+function endDrag(e){const d=G&&G.drag;if(!d||e.pointerId!==d.pid)return;G.drag=null;const it=d.it;it.el.classList.remove('drag');
+  const p=pt(e),pad=18;
+  const inside=s=>p.x>=s.x-s.w/2-pad&&p.x<=s.x+s.w/2+pad&&p.y>=s.y-s.h-pad&&p.y<=s.y+pad;
+  if(!G.hintOn)showGhosts(()=>false);
+  const hits=G.sc.slots.map((s,si)=>({s,si})).filter(o=>inside(o.s));
+  const match=o=>o.s.kind===it.kind&&(o.s.bin||!o.s.filled);
+  const good=hits.find(o=>match(o)&&avail(o.s))||hits.find(match);
+  if(good){if(avail(good.s))return place(it,good.s);
+    toast(`Put the ${NAMES[good.s.after]||good.s.after} down first.`);tween(it,{...it.start,s:1},320);return}
+  const wrong=hits.find(o=>o.s.kind!==it.kind&&!o.s.filled&&avail(o.s)&&!BIGZ.has(o.s.kind));
+  if(wrong){
+    G.miss++;blip(220,140,.16,'sine',.1);
+    const g=ghostEl(wrong.si);g.classList.add('show','bad');setTimeout(()=>{g.classList.remove('bad');if(!G.hintOn)g.classList.remove('show')},650);
+    toast(it.kind==='trash'?'That is rubbish. It goes in the bin.':'That spot is for something else.');
+    tween(it,{...it.start,s:1},320);return}
+  // dropped in open space: it falls to the floor, still untidy
+  const ny=Math.max(575,Math.min(634,it.pose.y));
+  tween(it,{y:ny,r:it.start.r,s:1},260);
+}
+svg.addEventListener('pointerup',endDrag);svg.addEventListener('pointercancel',endDrag);
+
+function place(it,s){
+  it.placed=true;G.done++;updateMeter();chime(G.done);
+  if(s.bin){tween(it,{x:s.x,y:s.y-34,r:0,s:.9},160,()=>tween(it,{y:s.y-10,s:.2},180,()=>it.el.remove()));}
+  else{s.filled=true;svg.querySelector('#p'+layerOf(s)).appendChild(it.el);it.el.style.pointerEvents='none';tween(it,{x:s.x,y:s.y,r:0,s:1.12},200,()=>tween(it,{s:.96},90,()=>tween(it,{s:1},120)))}
+  sparkle(s.x,s.y-Math.min(s.h,IT[it.kind].h)/2);
+  if(G.done===G.total)win();
+}
+function sparkle(x,y){const fx=svg.querySelector('#fx');if(RM)return;let h='';
+  for(let i=0;i<7;i++){const a=i/7*Math.PI*2,dx=Math.cos(a)*30,dy=Math.sin(a)*30;
+    h+=`<circle cx="${x}" cy="${y}" r="3" fill="${i%2?'#dfae4b':'#ffffff'}"><animate attributeName="cx" to="${x+dx}" dur=".5s" fill="freeze"/><animate attributeName="cy" to="${y+dy}" dur=".5s" fill="freeze"/><animate attributeName="opacity" from="1" to="0" dur=".5s" fill="freeze"/></circle>`}
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.innerHTML=h;fx.appendChild(g);setTimeout(()=>g.remove(),600)}
+function win(){
+  G.won=true;clearInterval(timer);G.hintOn=false;showGhosts(()=>false);
+  setTimeout(()=>{svg.classList.add('lit');blip(523,784,.25,'sine',.1);setTimeout(()=>blip(784,1046,.3,'sine',.08),180)},250);
+  const pen=G.miss+G.hints,stars=pen<=1?3:pen<=4?2:1;
+  const best=load(),prev=best[G.lv.id];
+  if(!prev||stars>prev.stars||(stars===prev.stars&&G.t<prev.time))best[G.lv.id]={stars,time:G.t};save(best);
+  $('wStars').innerHTML=[1,2,3].map(k=>starSVG(stars>=k)).join('');
+  $('wTitle').textContent=['','Tidy enough','Looking good','Picture perfect'][stars];
+  $('wTime').textContent=fmt(G.t);$('wMiss').textContent=G.miss;$('wHint').textContent=G.hints;
+  $('wNext').hidden=G.i>=LEVELS.length-1;
+  setTimeout(()=>{$('win').hidden=false},1500);
+}
+$('hint').onclick=()=>{if(!G||G.won)return;G.hints++;G.hintOn=true;startClock();showGhosts(s=>!s.filled&&avail(s));toast('Faint outlines show where things go. Hints cost a star.');
+  clearTimeout(G.hintT);G.hintT=setTimeout(()=>{G.hintOn=false;if(!G.drag)showGhosts(()=>false)},3200)};
+$('reset').onclick=()=>G&&startLevel(G.i);
+$('sound').onclick=e=>{soundOn=!soundOn;e.currentTarget.textContent=soundOn?'Sound on':'Sound off';e.currentTarget.setAttribute('aria-pressed',soundOn)};
+function goHome(){clearInterval(timer);G=null;$('game').hidden=true;$('home').hidden=false;renderHome()}
+$('back').onclick=goHome;$('wRooms').onclick=goHome;
+$('wAgain').onclick=()=>startLevel(G.i);$('wNext').onclick=()=>startLevel(G.i+1);
+renderHome();
+</script>
+
+</body>
+</html>
