@@ -289,7 +289,7 @@ function sceneStudy(){
   const g=grid(100,128,400,162,2,4,8,F.inner);s+=g.s;
   s+=R(100,288,8,94,F.body,EDGE)+R(492,288,8,94,F.body,EDGE)+panel(80,380,440,14)+drawers(92,394,130,161,3)+cabinet(388,394,120,161,22)+bin(560,618);
   const c=g.cells;
-  return {furn:s,trash:1,spill:[[110,490,380]],slots:[
+  return {furn:s+WINGS.study(),trash:1,spill:[[110,490,380]],slots:[
     {...c[0],kind:'books',v:0},{...c[2],kind:'bookstack'},{...c[5],kind:'plant',v:1},
     {x:170,y:128,w:100,h:60,kind:'trailing'},
     {x:150,y:380,w:90,h:90,kind:'lamp'},{x:300,y:380,w:120,h:80,kind:'laptop'},{x:445,y:380,w:80,h:70,kind:'pencup'},
@@ -299,7 +299,7 @@ function sceneCorner(){
   for(let i=0;i<4;i++)s+=cabinet(200+i*60,100,60,90,76);
   const cub=grid(200,190,240,74,1,3,8,C.wood),bc=grid(452,68,128,297,4,1,8,F.inner);
   s+=cub.s+bc.s+panel(56,365,530,14)+drawers(66,379,124,176,4)+cabinet(456,379,124,176,22)+bin(42,620);
-  return {furn:s,trash:2,spill:[[200,440,365],[470,570,365]],slots:[
+  return {furn:s+WINGS.corner(),trash:2,spill:[[200,440,365],[470,570,365]],slots:[
     {x:250,y:100,w:90,h:60,kind:'trailing'},{x:400,y:100,w:70,h:56,kind:'clock'},
     {...cub.cells[0],kind:'basket'},{...cub.cells[1],kind:'frame'},{...cub.cells[2],kind:'box',v:0},
     {...bc.cells[0],kind:'books',v:1},{...bc.cells[1],kind:'globe'},{...bc.cells[2],kind:'plant',v:0},{...bc.cells[3],kind:'bookstack'},
@@ -309,7 +309,7 @@ function sceneReading(){
   let s=room({wall:'#cdd6c6',floor:'#b98d62',base:'#b7c1b0'})+wallWindow(110,70,100,150)+beam(110,220,240,520)+armchair(70,560);
   s+=floatShelf(300,150,260)+floatShelf(320,250,240);
   s+=panel(284,420,302,12)+drawers(290,432,145,118,2)+cabinet(435,432,145,118,22)+R(300,550,6,8,C.woodD)+R(568,550,6,8,C.woodD)+bin(560,634);
-  return {furn:s,trash:3,spill:[[300,580,420],[110,220,462]],slots:[
+  return {furn:s+WINGS.reading(),trash:3,spill:[[300,580,420],[110,220,462]],slots:[
     {x:122,y:330,w:76,h:62,kind:'wallart',v:0},{x:205,y:330,w:76,h:62,kind:'wallart',v:1},
     {x:340,y:150,w:70,h:60,kind:'books',v:2},{x:430,y:150,w:60,h:56,kind:'clock'},{x:510,y:150,w:60,h:68,kind:'plant',v:2},
     {x:365,y:250,w:50,h:42,kind:'candle'},{x:440,y:250,w:70,h:40,kind:'bookstack'},{x:520,y:250,w:60,h:60,kind:'globe'},
@@ -322,7 +322,7 @@ function sceneOffice(){
   s+=bk.s+R(178,342,384,38,'#d9c2a3')+hut.s+R(170,342,8,38,F.body,EDGE)+R(562,342,8,38,F.body,EDGE);
   s+=floatShelf(215,200,310)+panel(160,380,420,14)+drawers(170,394,120,161,3)+cabinet(450,394,120,161,22)+bin(160,632);
   const b=bk.cells,h=hut.cells;
-  return {furn:s,trash:3,spill:[[180,570,380],[230,510,200]],slots:[
+  return {furn:s+WINGS.office(),trash:3,spill:[[180,570,380],[230,510,200]],slots:[
     {x:84,y:60,w:110,h:60,kind:'trailing'},
     {...b[0],kind:'plant',v:2},{...b[1],kind:'books',v:1},{...b[2],kind:'globe'},{...b[3],kind:'bookstack'},{...b[4],kind:'basket'},{...b[5],kind:'box',v:1},
     {x:300,y:118,w:76,h:62,kind:'wallart',v:2},{x:400,y:118,w:76,h:62,kind:'wallart',v:0},
@@ -441,7 +441,7 @@ function sceneCozy(t){
   if(t>=3)sl.push({x:420,y:286,w:68,h:92,kind:'poster',v:1},{x:432,y:556,w:84,h:176,kind:'tree',layer:2},{x:546,y:638,w:116,h:78,kind:'pouf'},
     {x:56,y:290,w:46,h:52,kind:'frame'},{x:132,y:290,w:48,h:88,kind:'orchid'});
   if(t>=4)sl.push({...bk.cells[3],kind:'books',v:1},{x:262,y:446,w:62,h:62,kind:'pillow',v:2},{x:546,y:566,w:60,h:50,kind:'headphones',after:'pouf'},{x:94,y:290,w:30,h:40,kind:'candle'});
-  return {furn:s,front:coffee(300,632),trash:[1,2,2,3][t-1],spill:[[190,410,548]],slots:sl}}
+  return {furn:s+WINGS.cozy(t),front:coffee(300,632),trash:[1,2,2,3][t-1],spill:[[190,410,548]],slots:sl}}
 
 /* ================= colour pop furniture ================= */
 function bigWindow(x,y,w,h){let s=R(x,y-14,w+30,h+30,'#c9935a')+R(x,y,w,h,'#22262a')+R(x+8,y+8,w-16,h-16,'#d8ead2');const r=rngOf(21);
@@ -466,7 +466,52 @@ function scenePop(t){
     {x:372,y:340,w:64,h:76,kind:'quote'},{...c1.cell,kind:'books',v:2},{x:232,y:430,w:76,h:60,kind:'wallart',v:3},{x:150,y:470,w:48,h:66,kind:'plant',v:0});
   if(t>=4)sl.push({...bc.cells[0],kind:'books',v:1},{...bc.cells[1],kind:'plant',v:2},{...bc.cells[2],kind:'hand'},{...c2.cell,kind:'bookstack'},
     {x:512,y:150,w:40,h:66,kind:'vase'},{x:568,y:150,w:44,h:60,kind:'globe'},{x:360,y:96,w:100,h:76,kind:'pleated'});
-  return {furn:s,trash:[1,2,2,3][t-1],spill:[[10,200,470]],slots:sl}}
+  return {furn:s+WINGS.pop(),trash:[1,2,2,3][t-1],spill:[[10,200,470]],slots:sl}}
+
+/* ================= wing decor (only visible on wide / landscape screens) ================= */
+const ART={
+ mountain:(x,y,w,h)=>R(x,y,w,h,'#dbe9ec')+`<circle cx="${x+w*.72}" cy="${y+h*.3}" r="${w*.1}" fill="#dfae4b"/><path d="M${x} ${y+h} L${x+w*.35} ${y+h*.42} L${x+w*.6} ${y+h*.75} L${x+w*.75} ${y+h*.55} L${x+w} ${y+h}Z" fill="#7f9c86"/>`,
+ sun:(x,y,w,h)=>R(x,y,w,h,'#f3e3cf')+`<path d="M${x+w*.2} ${y+h*.62} A${w*.3} ${w*.3} 0 0 1 ${x+w*.8} ${y+h*.62}Z" fill="#c7774f"/>`+[.72,.82,.92].map(f=>`<line x1="${x+w*.12}" y1="${y+h*f}" x2="${x+w*.88}" y2="${y+h*f}" stroke="#c7774f" stroke-width="1.6"/>`).join(''),
+ arch:(x,y,w,h)=>[[.9,'#dfae4b'],[.62,'#e3a99a'],[.34,'#7f9c86']].map(([f,c])=>`<path d="M${x+w*(.5-f/2)} ${y+h} V${y+h-h*f*.55} A${w*f/2} ${w*f/2} 0 0 1 ${x+w*(.5+f/2)} ${y+h-h*f*.55} V${y+h}Z" fill="${c}"/>`).join(''),
+ lines:(x,y,w,h)=>[.3,.5,.7].map((f,i)=>`<path d="M${x} ${y+h*f} q${w/4} ${-h*.12} ${w/2} 0 t${w/2} 0" stroke="${['#4f7c86','#c7774f','#3e5168'][i]}" stroke-width="2.4" fill="none"/>`).join(''),
+ leaf:(x,y,w,h)=>`<path d="M${x+w/2} ${y+h} V${y+h*.1}" stroke="#4f7f45" stroke-width="1.6"/>`+[.25,.45,.65].map((f,i)=>L(x+w/2+(i%2?7:-7),y+h*f,4,9,i%2?40:-40,'#4f7f45')).join(''),
+ figure:(x,y,w,h)=>`<path d="M${x+w*.2} ${y+h} C${x} ${y+h*.4} ${x+w*.5} ${y+h*.1} ${x+w*.55} ${y+h*.45} C${x+w*.6} ${y+h*.8} ${x+w*.9} ${y+h*.6} ${x+w*.85} ${y+h}Z" fill="#26231f"/><circle cx="${x+w*.68}" cy="${y+h*.25}" r="${w*.1}" fill="#d24b4f"/>`,
+ checker:(x,y,w,h)=>{let s='';for(let r=0;r<5;r++)for(let c=0;c<4;c++)s+=R(x+c*w/4,y+r*h/5,w/4,h/5,(r+c)%2?'#2f47b5':'#f6f3ec');return s},
+ smile:(x,y,w,h)=>R(x,y,w,h,'#f6c9d0')+`<circle cx="${x+w/2}" cy="${y+h/2}" r="${w*.34}" fill="#dfae4b"/><circle cx="${x+w*.4}" cy="${y+h*.44}" r="1.8" fill="#2b2420"/><circle cx="${x+w*.6}" cy="${y+h*.44}" r="1.8" fill="#2b2420"/><path d="M${x+w*.36} ${y+h*.56} q${w*.14} ${h*.12} ${w*.28} 0" stroke="#2b2420" stroke-width="1.6" fill="none"/>`,
+ heart:(x,y,w,h)=>R(x,y,w,h,'#fbeef0')+`<path d="${heartP(x+w/2,y+h/2,w*.2)}" fill="#c42a3c"/>`,
+ bow:(x,y,w,h)=>R(x,y,w,h,'#fbeef0')+bowP(x+w/2,y+h*.45,w*.22,KC.wine),
+ cherry:(x,y,w,h)=>R(x,y,w,h,'#f6e2e2')+`<path d="M${x+w*.35} ${y+h*.7} Q${x+w*.45} ${y+h*.3} ${x+w*.55} ${y+h*.18} M${x+w*.68} ${y+h*.7} Q${x+w*.6} ${y+h*.35} ${x+w*.55} ${y+h*.18}" stroke="#7a3b2a" stroke-width="1.4" fill="none"/><circle cx="${x+w*.33}" cy="${y+h*.74}" r="${w*.13}" fill="#b3263a"/><circle cx="${x+w*.7}" cy="${y+h*.74}" r="${w*.13}" fill="#b3263a"/>`,
+ K:(x,y,w,h)=>R(x,y,w,h,'#fdf4f2')+TXT(x+w/2,y+h*.72,'K',h*.62,KC.wine,'Georgia,serif',700),
+ paw:(x,y,w,h)=>R(x,y,w,h,'#f6efe4')+`<ellipse cx="${x+w/2}" cy="${y+h*.64}" rx="${w*.2}" ry="${h*.14}" fill="#c29e6c"/>`+[[-.24,.38],[-.08,.26],[.08,.26],[.24,.38]].map(([dx,dy])=>`<ellipse cx="${x+w*(.5+dx)}" cy="${y+h*dy+4}" rx="${w*.07}" ry="${h*.07}" fill="#c29e6c"/>`).join(''),
+ fish:(x,y,w,h)=>R(x,y,w,h,'#dbe9ec')+`<path d="M${x+w*.15} ${y+h/2} Q${x+w*.45} ${y+h*.2} ${x+w*.7} ${y+h/2} Q${x+w*.45} ${y+h*.8} ${x+w*.15} ${y+h/2}Z M${x+w*.7} ${y+h/2} L${x+w*.9} ${y+h*.35} V${y+h*.65}Z" fill="#e8913f"/><circle cx="${x+w*.27}" cy="${y+h*.47}" r="1.6" fill="#2b2420"/>`,
+ catface:(x,y,w,h)=>R(x,y,w,h,'#f6efe4')+`<path d="M${x+w*.22} ${y+h*.85} V${y+h*.4} L${x+w*.3} ${y+h*.18} L${x+w*.42} ${y+h*.32} H${x+w*.58} L${x+w*.7} ${y+h*.18} L${x+w*.78} ${y+h*.4} V${y+h*.85}Z" fill="#fff" stroke="#bfb6a9"/><circle cx="${x+w*.4}" cy="${y+h*.5}" r="2.2" fill="#5b8fb3"/><circle cx="${x+w*.6}" cy="${y+h*.5}" r="2.2" fill="#5b8fb3"/>`+bowP(x+w*.68,y+h*.3,4,'#e98fa2')
+};
+function artFrame(cx,by,w,h,fc,art,mat='#fbf8f2'){const x=cx-w/2,y=by-h;const m=Math.max(5,w*.14);
+  return R(x+3,y+5,w,h,'rgba(0,0,0,.08)','rx="2"')+R(x,y,w,h,fc,'rx="1.5"')+R(x+3,y+3,w-6,h-6,mat)+ART[art](x+m,y+m,w-2*m,h-2*m)}
+function sconce(x,y){return `<circle class="glow" cx="${x}" cy="${y+14}" r="26" fill="#ffe7a0" fill-opacity=".7"/>`+R(x-3,y-12,6,16,'#c9a96a','rx="2"')+`<path d="M${x} ${y} h14 v4" stroke="#c9a96a" stroke-width="2" fill="none"/><path d="M${x+4} ${y+4} H${x+24} L${x+28} ${y+22} H${x}Z" fill="#f4ead6" stroke="#dccaa6"/>`}
+function pampas(x,y){let s='';[[-14,-150,-18],[-4,-168,-4],[8,-160,10],[16,-140,22]].forEach(([dx,dy,a])=>{s+=`<path d="M${x} ${y-70} Q${x+dx*.5} ${y+(dy-70)/2} ${x+dx} ${y+dy}" stroke="#b9a07a" stroke-width="1.6" fill="none"/>`+L(x+dx,y+dy+10,6,24,a,'#e9dcc2')});
+  return s+`<path d="M${x-16} ${y} Q${x-26} ${y-40} ${x-10} ${y-70} H${x+10} Q${x+26} ${y-40} ${x+16} ${y}Z" fill="#d9cdb9"/><path d="M${x-10} ${y-60} q-8 24 -2 50" stroke="rgba(255,255,255,.4)" stroke-width="3" fill="none"/><ellipse cx="${x}" cy="${y}" rx="22" ry="4" fill="rgba(40,30,20,.14)"/>`}
+function ladder(x,y,c){let s=R(x-30,y-176,6,176,'#c8a27a','rx="2"')+R(x+24,y-176,6,176,'#c8a27a','rx="2"');for(let r=0;r<5;r++)s+=R(x-28,y-160+r*34,56,5,'#b48d62','rx="2"');
+  return s+`<path d="M${x-30} ${y-126} Q${x} ${y-136} ${x+30} ${y-126} L${x+26} ${y-70} Q${x+10} ${y-58} ${x+4} ${y-76} L${x-6} ${y-80} Q${x-20} ${y-66} ${x-28} ${y-80}Z" fill="${c}"/><path d="M${x-26} ${y-110} H${x+26}" stroke="rgba(255,255,255,.35)" stroke-width="3"/><ellipse cx="${x}" cy="${y}" rx="34" ry="4" fill="rgba(40,30,20,.12)"/>`}
+function catBed(x,y){return `<ellipse cx="${x}" cy="${y-2}" rx="48" ry="8" fill="rgba(40,30,20,.14)"/>`+R(x-46,y-30,92,30,'#efe6d6','rx="15"')+R(x-34,y-24,68,14,'#e2d6c3','rx="7"')+dots(x-44,y-30,88,30,18,61,'#e0d5c2')}
+const WINGS={
+ study:()=>artFrame(-110,300,70,90,'#9c7550','mountain')+artFrame(-200,268,52,64,'#2f3436','sun')+artFrame(-340,300,80,100,'#c8a27a','arch')+pampas(-90,548)+ladder(-290,548,'#c7774f')+
+   artFrame(690,290,64,84,'#2f3436','lines')+artFrame(775,262,52,64,'#9c7550','leaf')+artFrame(905,310,88,110,'#c8a27a','sun')+pampas(700,548)+ladder(950,548,'#7f9c86'),
+ corner:()=>artFrame(-90,300,64,84,'#2f3436','arch')+artFrame(-180,268,52,64,'#9c7550','mountain')+artFrame(-335,300,80,100,'#c8a27a','lines')+pampas(-70,548)+ladder(-290,548,'#dfae4b')+
+   artFrame(690,300,70,90,'#9c7550','sun')+artFrame(780,268,52,64,'#2f3436','leaf')+artFrame(910,300,84,104,'#c8a27a','mountain')+pampas(690,548)+ladder(960,548,'#4f7c86'),
+ reading:()=>artFrame(-100,290,70,90,'#2f3436','figure')+artFrame(-190,258,52,64,'#9c7550','leaf')+sconce(-300,220)+pampas(-80,548)+ladder(-320,548,'#e3a99a')+
+   artFrame(690,280,64,84,'#9c7550','arch')+artFrame(775,252,52,64,'#2f3436','sun')+artFrame(910,300,84,104,'#c8a27a','lines')+pampas(700,548)+ladder(965,548,'#dfae4b'),
+ office:()=>artFrame(-90,280,64,84,'#2f3436','lines')+artFrame(-180,250,52,64,'#c8a27a','mountain')+artFrame(-330,300,84,104,'#9c7550','sun')+pampas(-80,548)+ladder(-290,548,'#3e5168')+
+   artFrame(690,280,70,90,'#9c7550','arch')+artFrame(780,250,52,64,'#2f3436','leaf')+sconce(890,230)+pampas(690,548)+ladder(965,548,'#c7774f'),
+ cozy:t=>artFrame(-100,300,70,92,'#26231f','figure')+artFrame(-190,262,52,64,'#26231f','leaf')+artFrame(-335,300,80,100,'#26231f','lines','#f7f3ea')+pampas(-80,548)+ladder(-290,548,'#dcc09f')+
+   (t<3?artFrame(690,300,64,84,'#26231f','arch')+artFrame(780,262,52,64,'#26231f','sun')+sconce(890,220):'')+pampas(700,548)+ladder(950,548,'#efe6d6'),
+ pop:()=>artFrame(-90,300,64,84,'#2f47b5','checker','#fff')+artFrame(-180,262,52,64,'#d23a2c','smile','#fff')+artFrame(-335,300,80,100,'#dfae4b','sun','#fff')+pampas(-70,548)+ladder(-290,548,'#2f47b5')+
+   artFrame(690,300,64,84,'#d23a2c','lines','#fff')+artFrame(780,262,52,64,'#2f47b5','heart','#fff')+artFrame(905,300,84,104,'#2f47b5','smile','#fff')+pampas(700,548)+ladder(975,548,'#d23a2c'),
+ cat:()=>artFrame(-150,300,64,84,KC.oak,'paw')+artFrame(-240,262,52,64,KC.oak,'fish')+artFrame(-360,300,80,100,KC.oak,'catface')+pampas(-140,548)+catBed(-300,548)+
+   artFrame(735,300,64,84,KC.oak,'catface')+artFrame(825,262,52,64,KC.oak,'K')+artFrame(940,300,80,100,KC.oak,'fish')+catBed(790,548)+pampas(950,548),
+ bow:()=>artFrame(-100,300,64,84,'#f0c9cf','bow')+artFrame(-190,262,52,64,KC.wine,'heart')+artFrame(-335,300,80,100,'#f0c9cf','cherry')+pampas(-90,548)+ladder(-290,548,KC.wine)+
+   artFrame(655,232,46,56,'#e9a3ad','heart')+artFrame(660,330,52,66,'#f0c9cf','cherry')+artFrame(742,300,60,76,KC.wine,'bow')+artFrame(930,300,80,100,KC.wine,'K')+pampas(800,548)+ladder(880,548,'#e9a3ad')
+};
 
 const COLS=[{name:'Desk Corners',sub:'Built-in desks, hutches and bookcases'},{name:'Cozy Nooks',sub:'Boucle, candlelight and a fluffy rug'},{name:'Colour Pop',sub:'Stripes, checks and bold blue shelves'}];
 const TIERS=['Easy','Medium','Hard','Expert'];
@@ -571,7 +616,7 @@ function sceneCat(t){
   if(t>=2)sl.push({x:290,y:616,w:56,h:96,kind:'feeder'},{x:490,y:181,w:140,h:40,kind:'padL'},{x:428,y:401,w:100,h:36,kind:'padM'},{x:543,y:481,w:84,h:34,kind:'padS'},{x:210,y:250,w:46,h:62,kind:'jar',v:0});
   if(t>=3)sl.push({x:432,y:330,w:50,h:68,kind:'plant',v:1},{x:300,y:250,w:56,h:46,kind:'wickerbox'},{x:355,y:250,w:56,h:46,kind:'wickerbox'},{x:110,y:410,w:58,h:68,kind:'pawframe'});
   if(t>=4)sl.push({x:62,y:624,w:50,h:42,kind:'fountain'},{x:330,y:400,w:76,h:62,kind:'wallart',v:0});
-  return {furn:s,top:kachori(450,548,.8,true),trash:[2,2,3,3][t-1],trashV:10,binMsg:'That is a toy. It goes in the toy basket.',spill:[[90,380,250]],slots:sl}}
+  return {furn:s+WINGS.cat(),top:kachori(450,548,.8,true),trash:[2,2,3,3][t-1],trashV:10,binMsg:'That is a toy. It goes in the toy basket.',spill:[[90,380,250]],slots:sl}}
 function fairyCurtain(){let s=R(0,24,64,516,'rgba(255,255,255,.75)');for(let i=0;i<5;i++){const fx=6+i*13;s+=`<path d="M${fx} 26 C${fx-4} 200 ${fx+5} 380 ${fx} 538" stroke="rgba(200,190,175,.35)" stroke-width="4" fill="none"/>`}
   const r=rngOf(41);for(let i=0;i<22;i++)s+=bowP((6+r()*52).toFixed(1)*1,(50+r()*470).toFixed(1)*1,3.2,KC.wine);
   for(let y=34;y<536;y+=16)for(const x of [3,62]){s+=`<circle cx="${x}" cy="${y}" r="2" fill="#f1e3c2"/><circle class="glow" cx="${x}" cy="${y}" r="4.5" fill="#ffe7a0" fill-opacity=".8"/>`}
@@ -592,7 +637,7 @@ function sceneBow(t){
   if(t>=3)sl.push({x:240,y:400,w:86,h:116,kind:'roundmirror'},{x:178,y:400,w:46,h:72,kind:'tulips'},{x:132,y:400,w:38,h:60,kind:'pinklamp'},{x:96,y:330,w:66,h:64,kind:'heartmirror'},{x:522,y:478,w:62,h:54,kind:'pillow',v:8});
   if(t>=4)sl.push({x:154,y:170,w:62,h:58,kind:'books',v:3},{x:222,y:170,w:56,h:44,kind:'trailing'},{x:154,y:240,w:62,h:58,kind:'books',v:3},{x:224,y:240,w:56,h:44,kind:'trailing'},
     {x:570,y:332,w:62,h:76,kind:'kprint'},{x:430,y:478,w:62,h:54,kind:'pillow',v:9});
-  return {furn:s,top:kachori(62,640,1.1),trash:[1,2,2,3][t-1],spill:[[410,590,560]],slots:sl}}
+  return {furn:s+WINGS.bow(),top:kachori(62,640,1.1),trash:[1,2,2,3][t-1],spill:[[410,590,560]],slots:sl}}
 
 COLS.push({name:"Kachori's Snack Corner",sub:'Feeders, jars and her very tall cat tree',kachori:true},{name:"Kachori's Bow Bedroom",sub:'Cherries, bows and a bunny she pretends to ignore',kachori:true});
 const KWIN=['',"Kachori sniffs. Acceptable.",'Kachori purrs','Kachori approves!'];
