@@ -3,6 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#e7eae4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141a18" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tidy Corners">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="description" content="A cosy room-tidying game with twenty levels, starring Kachori the cat.">
+<style>html{box-sizing:border-box;color-scheme:light}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Tidy Corners</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -60,6 +71,9 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .stars{display:inline-flex;gap:2px}
 .stars svg{width:16px;height:16px}
 .foot{font-size:13px;color:var(--muted)}
+.install{display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap;background:var(--accent-soft);border-radius:16px;padding:12px 16px}
+.install .itx{flex:1;min-width:200px;display:flex;flex-direction:column;gap:2px;font-size:14px}
+.install b{font-size:15px}
 .cols{display:flex;flex-direction:column;gap:30px}
 .colhead{display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap;margin-bottom:12px}
 .colhead h2{font-family:var(--f-display);font-weight:400;font-size:26px;margin:0;line-height:1.1}
@@ -139,6 +153,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
       <li><b>2</b>Drop it on the spot it belongs to</li>
       <li><b>3</b>Rubbish goes in the wire bin</li>
     </ol>
+    <div class="install" id="install" hidden><div class="itx"><b>Play it like an app</b><span id="installMsg">Add Tidy Corners to your home screen. It opens full screen and works offline.</span></div><button class="btn primary" id="installBtn" hidden>Install</button></div>
     <div class="cols" id="rooms"></div>
     <p class="foot">Fewer wrong drops and hints earn more stars. Works with a mouse or a finger.</p>
   </div>
@@ -787,6 +802,17 @@ $('wAgain').onclick=()=>startLevel(G.i);$('wNext').onclick=()=>startLevel(G.i+1)
 {const fs=$('fs');fs.hidden=!(document.fullscreenEnabled&&matchMedia('(pointer:fine)').matches);
   fs.onclick=()=>{try{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen().catch(()=>toast('Full screen is not available here.'))}catch(e){toast('Full screen is not available here.')}};
   document.addEventListener('fullscreenchange',()=>{fs.textContent=document.fullscreenElement?'Exit full screen':'Full screen'})}
+/* ================= install as an app ================= */
+{const onWeb=/^https:$/.test(location.protocol)&&!/claude/i.test(location.hostname);
+ const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+ if(onWeb&&'serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+ if(standalone)track('launch/app','Opened from home screen');
+ const box=$('install'),btn=$('installBtn'),msg=$('installMsg');let deferred=null;
+ const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+ if(onWeb&&!standalone&&ios){msg.textContent='On iPhone or iPad: tap the Share button in Safari, then choose Add to Home Screen.';box.hidden=false}
+ addEventListener('beforeinstallprompt',e=>{if(!onWeb||standalone)return;e.preventDefault();deferred=e;btn.hidden=false;box.hidden=false});
+ btn.onclick=async()=>{if(!deferred)return;deferred.prompt();try{const r=await deferred.userChoice;track('install/'+r.outcome,'Install prompt: '+r.outcome)}catch(e){}deferred=null;btn.hidden=true;box.hidden=true};
+ addEventListener('appinstalled',()=>{box.hidden=true;track('installed','App installed')});}
 renderHome();
 </script>
 
