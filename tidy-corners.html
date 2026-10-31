@@ -592,6 +592,20 @@ const KWIN=['',"Kachori sniffs. Acceptable.",'Kachori purrs','Kachori approves!'
   .forEach(([n,sb],i)=>LEVELS.push({id:'kbow'+(i+1),col:4,name:n,sub:sb,build:()=>sceneBow(i+1),seed:401+i*19,guided:i<2,tier:TIERS[i],wins:KWIN}));
 const KSTORY=`Meet Kachori, a fluffy white princess with blue eyes and a pink bow, named after the crispiest snack in the house. She lives by one rule: anything on a shelf must be tested for gravity. This morning she tested everything. Tidy her snack corner and her favourite bedroom before her humans get home, and she might let you rub her belly. (She won't.) She also insists her monogram goes on display, so look for the letter K in every room. Tap her if you need moral support.`;
 
+/* ================= play logging (GoatCounter) =================
+   Set GC_CODE to your GoatCounter site code to switch logging on.
+   It only runs on the public GitHub Pages link, never inside Claude. */
+const GC_CODE='';
+const GC_ON=!!GC_CODE&&/^https?:$/.test(location.protocol)&&!/claude/i.test(location.hostname);
+if(GC_ON){const sc=document.createElement('script');sc.async=true;sc.src='https://gc.zgo.at/count.js';sc.dataset.goatcounter=`https://${GC_CODE}.goatcounter.com/count`;document.head.appendChild(sc)}
+function track(path,title){if(!GC_ON)return;const go=()=>{try{window.goatcounter.count({path,title:title||path,event:true})}catch(e){}};
+  if(window.goatcounter&&window.goatcounter.count)go();else{let n=0;const iv=setInterval(()=>{if(window.goatcounter&&window.goatcounter.count){clearInterval(iv);go()}else if(++n>20)clearInterval(iv)},500)}}
+const bucket=s=>s<60?'under 1 min':s<180?'1-3 min':s<600?'3-10 min':s<1800?'10-30 min':'30+ min';
+let activeSec=0,visSince=document.visibilityState==='visible'?Date.now():0,sessionSent=false,levelsDone=0;
+function flushSession(){if(visSince){activeSec+=(Date.now()-visSince)/1000;visSince=0}
+  if(sessionSent||activeSec<5)return;sessionSent=true;track('session/'+bucket(activeSec),`Session length: ${bucket(activeSec)} (${levelsDone} rooms finished)`)}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushSession();else if(!visSince)visSince=Date.now()});
+addEventListener('pagehide',flushSession);
 /* ================= sound ================= */
 let AC=null,soundOn=true;
 function blip(f1,f2,dur=.12,type='sine',vol=.12){if(!soundOn)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();
@@ -627,6 +641,7 @@ function startLevel(i){
   $('gName').textContent=lv.name;$('gSub').textContent=lv.tier+' · '+lv.sub;
   $('win').hidden=true;$('home').hidden=true;$('game').hidden=false;
   clearInterval(timer);$('clock').textContent='0:00';updateMeter();
+  track('start/'+lv.id,'Started: '+lv.name);
   toast(lv.guided?'Pick something up. Its spot will light up.':'No glowing spots here. Use Hint if you get stuck.');
 }
 function updateMeter(){$('fill').style.width=(G.done/G.total*100)+'%';$('count').textContent=`${G.done} / ${G.total} tidy`}
@@ -687,7 +702,8 @@ function sparkle(x,y){const fx=svg.querySelector('#fx');if(RM)return;let h='';
 function win(){
   G.won=true;clearInterval(timer);G.hintOn=false;showGhosts(()=>false);
   setTimeout(()=>{svg.classList.add('lit');blip(523,784,.25,'sine',.1);setTimeout(()=>blip(784,1046,.3,'sine',.08),180)},250);
-  const pen=G.miss+G.hints,stars=pen<=1?3:pen<=4?2:1;
+  const pen=G.miss+G.hints,stars=pen<=1?3:pen<=4?2:1;levelsDone++;
+  track('finish/'+G.lv.id,`Finished: ${G.lv.name}`);track('finish-time/'+bucket(G.t),'Room time: '+bucket(G.t));
   const best=load(),prev=best[G.lv.id];
   if(!prev||stars>prev.stars||(stars===prev.stars&&G.t<prev.time))best[G.lv.id]={stars,time:G.t};save(best);
   $('wStars').innerHTML=[1,2,3].map(k=>starSVG(stars>=k)).join('');
