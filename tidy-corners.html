@@ -52,6 +52,10 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 /* ---------- Home ---------- */
 #home{height:100%;overflow-y:auto;padding-block:28px 40px}
 .wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.mast{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.mast .mtx{min-width:0}
+#mastCat{width:120px;height:auto;flex:none}
+@media (max-width:520px){#mastCat{width:76px}}
 .mast h1{font-family:var(--f-display);font-weight:400;font-size:clamp(38px,7vw,64px);line-height:1;margin:0;letter-spacing:-.01em;text-wrap:balance}
 .mast h1 span{color:var(--accent)}
 .mast p{margin:10px 0 0;max-width:58ch;color:var(--muted);font-size:16px}
@@ -117,6 +121,8 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .win{position:absolute;inset:0;display:grid;place-items:center;background:rgba(18,26,23,.38);padding:16px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 22px 18px;max-width:340px;width:100%;text-align:center;display:flex;flex-direction:column;gap:10px;animation:pop .35s cubic-bezier(.2,.9,.3,1.2)}
 .card h3{font-family:var(--f-display);font-weight:400;font-size:28px;margin:0;line-height:1.1}
+.card .tale{margin:0;font-size:15px;line-height:1.5;color:var(--ink);text-wrap:pretty}
+.card .kport{width:84px;height:auto;align-self:center;margin-bottom:-4px}
 .card .big{display:flex;justify-content:center;gap:6px}
 .card .big svg{width:40px;height:40px}
 .card .stats{display:flex;justify-content:center;gap:18px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -145,8 +151,11 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 <div id="home">
   <div class="wrap">
     <header class="mast">
-      <h1>Tidy <span>Corners</span></h1>
-      <p>Somebody left the room in a state. Pick up what's lying on the floor and put each thing where it belongs until the corner looks calm again.</p>
+      <div class="mtx">
+        <h1>Tidy <span>Corners</span></h1>
+        <p>Meet Kachori: fluffy, white, pink bow, and one hobby, testing whether things fall off shelves. They always do. Follow her through twenty rooms and put back everything she "tested".</p>
+      </div>
+      <svg id="mastCat" viewBox="-40 -105 80 112" aria-hidden="true"></svg>
     </header>
     <ol class="how">
       <li><b>1</b>Drag anything off the floor</li>
@@ -178,10 +187,20 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
   <div class="stage">
     <svg id="svg" viewBox="0 0 600 640" preserveAspectRatio="xMidYMid meet" aria-label="Room to tidy"></svg>
     <div class="toast" id="toast"></div>
+    <div class="win" id="intro" hidden>
+      <div class="card">
+        <svg class="kport" id="iCat" viewBox="-40 -105 80 112" aria-hidden="true"></svg>
+        <span class="lvl" id="iTier"></span>
+        <h3 id="iTitle">Room</h3>
+        <p class="tale" id="iText"></p>
+        <div class="acts"><button class="btn primary" id="iGo">Start tidying</button></div>
+      </div>
+    </div>
     <div class="win" id="win" hidden>
       <div class="card">
         <div class="big" id="wStars"></div>
         <h3 id="wTitle">Corner sorted</h3>
+        <p class="tale" id="wTale"></p>
         <div class="stats">
           <div><b id="wTime">0:00</b>time</div>
           <div><b id="wMiss">0</b>wrong drops</div>
@@ -304,7 +323,7 @@ function sceneStudy(){
   const g=grid(100,128,400,162,2,4,8,F.inner);s+=g.s;
   s+=R(100,288,8,94,F.body,EDGE)+R(492,288,8,94,F.body,EDGE)+panel(80,380,440,14)+drawers(92,394,130,161,3)+cabinet(388,394,120,161,22)+bin(560,618);
   const c=g.cells;
-  return {furn:s+WINGS.study(),trash:1,spill:[[110,490,380]],slots:[
+  return {furn:s+WINGS.study(),top:kachori(440,128,.72),trash:1,spill:[[110,490,380]],slots:[
     {...c[0],kind:'books',v:0},{...c[2],kind:'bookstack'},{...c[5],kind:'plant',v:1},
     {x:170,y:128,w:100,h:60,kind:'trailing'},
     {x:150,y:380,w:90,h:90,kind:'lamp'},{x:300,y:380,w:120,h:80,kind:'laptop'},{x:445,y:380,w:80,h:70,kind:'pencup'},
@@ -314,7 +333,7 @@ function sceneCorner(){
   for(let i=0;i<4;i++)s+=cabinet(200+i*60,100,60,90,76);
   const cub=grid(200,190,240,74,1,3,8,C.wood),bc=grid(452,68,128,297,4,1,8,F.inner);
   s+=cub.s+bc.s+panel(56,365,530,14)+drawers(66,379,124,176,4)+cabinet(456,379,124,176,22)+bin(42,620);
-  return {furn:s+WINGS.corner(),trash:2,spill:[[200,440,365],[470,570,365]],slots:[
+  return {furn:s+WINGS.corner(),top:kachori(222,642,.9),trash:2,spill:[[200,440,365],[470,570,365]],slots:[
     {x:250,y:100,w:90,h:60,kind:'trailing'},{x:400,y:100,w:70,h:56,kind:'clock'},
     {...cub.cells[0],kind:'basket'},{...cub.cells[1],kind:'frame'},{...cub.cells[2],kind:'box',v:0},
     {...bc.cells[0],kind:'books',v:1},{...bc.cells[1],kind:'globe'},{...bc.cells[2],kind:'plant',v:0},{...bc.cells[3],kind:'bookstack'},
@@ -324,7 +343,7 @@ function sceneReading(){
   let s=room({wall:'#cdd6c6',floor:'#b98d62',base:'#b7c1b0'})+wallWindow(110,70,100,150)+beam(110,220,240,520)+armchair(70,560);
   s+=floatShelf(300,150,260)+floatShelf(320,250,240);
   s+=panel(284,420,302,12)+drawers(290,432,145,118,2)+cabinet(435,432,145,118,22)+R(300,550,6,8,C.woodD)+R(568,550,6,8,C.woodD)+bin(560,634);
-  return {furn:s+WINGS.reading(),trash:3,spill:[[300,580,420],[110,220,462]],slots:[
+  return {furn:s+WINGS.reading(),top:kachori(202,460,.7),trash:3,spill:[[300,580,420],[110,220,462]],slots:[
     {x:122,y:330,w:76,h:62,kind:'wallart',v:0},{x:205,y:330,w:76,h:62,kind:'wallart',v:1},
     {x:340,y:150,w:70,h:60,kind:'books',v:2},{x:430,y:150,w:60,h:56,kind:'clock'},{x:510,y:150,w:60,h:68,kind:'plant',v:2},
     {x:365,y:250,w:50,h:42,kind:'candle'},{x:440,y:250,w:70,h:40,kind:'bookstack'},{x:520,y:250,w:60,h:60,kind:'globe'},
@@ -337,7 +356,7 @@ function sceneOffice(){
   s+=bk.s+R(178,342,384,38,'#d9c2a3')+hut.s+R(170,342,8,38,F.body,EDGE)+R(562,342,8,38,F.body,EDGE);
   s+=floatShelf(215,200,310)+panel(160,380,420,14)+drawers(170,394,120,161,3)+cabinet(450,394,120,161,22)+bin(160,632);
   const b=bk.cells,h=hut.cells;
-  return {furn:s+WINGS.office(),trash:3,spill:[[180,570,380],[230,510,200]],slots:[
+  return {furn:s+WINGS.office(),top:kachori(78,640,.85),trash:3,spill:[[180,570,380],[230,510,200]],slots:[
     {x:84,y:60,w:110,h:60,kind:'trailing'},
     {...b[0],kind:'plant',v:2},{...b[1],kind:'books',v:1},{...b[2],kind:'globe'},{...b[3],kind:'bookstack'},{...b[4],kind:'basket'},{...b[5],kind:'box',v:1},
     {x:300,y:118,w:76,h:62,kind:'wallart',v:2},{x:400,y:118,w:76,h:62,kind:'wallart',v:0},
@@ -456,7 +475,7 @@ function sceneCozy(t){
   if(t>=3)sl.push({x:420,y:286,w:68,h:92,kind:'poster',v:1},{x:432,y:556,w:84,h:176,kind:'tree',layer:2},{x:546,y:638,w:116,h:78,kind:'pouf'},
     {x:56,y:290,w:46,h:52,kind:'frame'},{x:132,y:290,w:48,h:88,kind:'orchid'});
   if(t>=4)sl.push({...bk.cells[3],kind:'books',v:1},{x:262,y:446,w:62,h:62,kind:'pillow',v:2},{x:546,y:566,w:60,h:50,kind:'headphones',after:'pouf'},{x:94,y:290,w:30,h:40,kind:'candle'});
-  return {furn:s+WINGS.cozy(t),front:coffee(300,632),trash:[1,2,2,3][t-1],spill:[[190,410,548]],slots:sl}}
+  return {furn:s+WINGS.cozy(t),top:kachori(455,642,.86),front:coffee(300,632),trash:[1,2,2,3][t-1],spill:[[190,410,548]],slots:sl}}
 
 /* ================= colour pop furniture ================= */
 function bigWindow(x,y,w,h){let s=R(x,y-14,w+30,h+30,'#c9935a')+R(x,y,w,h,'#22262a')+R(x+8,y+8,w-16,h-16,'#d8ead2');const r=rngOf(21);
@@ -481,7 +500,7 @@ function scenePop(t){
     {x:372,y:340,w:64,h:76,kind:'quote'},{...c1.cell,kind:'books',v:2},{x:232,y:430,w:76,h:60,kind:'wallart',v:3},{x:150,y:470,w:48,h:66,kind:'plant',v:0});
   if(t>=4)sl.push({...bc.cells[0],kind:'books',v:1},{...bc.cells[1],kind:'plant',v:2},{...bc.cells[2],kind:'hand'},{...c2.cell,kind:'bookstack'},
     {x:512,y:150,w:40,h:66,kind:'vase'},{x:568,y:150,w:44,h:60,kind:'globe'},{x:360,y:96,w:100,h:76,kind:'pleated'});
-  return {furn:s+WINGS.pop(),trash:[1,2,2,3][t-1],spill:[[10,200,470]],slots:sl}}
+  return {furn:s+WINGS.pop(),top:kachori(196,642,.8),trash:[1,2,2,3][t-1],spill:[[10,200,470]],slots:sl}}
 
 /* ================= wing decor (only visible on wide / landscape screens) ================= */
 const ART={
@@ -660,7 +679,51 @@ const KWIN=['',"Kachori sniffs. Acceptable.",'Kachori purrs','Kachori approves!'
   .forEach(([n,sb],i)=>LEVELS.push({id:'kcat'+(i+1),col:3,name:n,sub:sb,build:()=>sceneCat(i+1),seed:307+i*11,guided:i<2,tier:TIERS[i],wins:KWIN}));
 [['Bow Bed','A throw, pillows and Miss Bun'],['Cherry Gallery','Bows, hearts and cherries on the wall'],['Vanity Hour','Tulips, mirrors and fairy lights'],["Kachori's Dream",'Shelves, prints and her own K pillow']]
   .forEach(([n,sb],i)=>LEVELS.push({id:'kbow'+(i+1),col:4,name:n,sub:sb,build:()=>sceneBow(i+1),seed:401+i*19,guided:i<2,tier:TIERS[i],wins:KWIN}));
-const KSTORY=`Meet Kachori, a fluffy white princess with blue eyes and a pink bow, named after the crispiest snack in the house. She lives by one rule: anything on a shelf must be tested for gravity. This morning she tested everything. Tidy her snack corner and her favourite bedroom before her humans get home, and she might let you rub her belly. (She won't.) She also insists her monogram goes on display, so look for the letter K in every room. Tap her if you need moral support.`;
+const KSTORY=`After eight rooms of 'helping' everyone else, Kachori finally gets two rooms of her own: a snack corner with her very tall cat tree, and a bedroom covered in bows. She insists her monogram goes on display, so look for the letter K in every level.`;
+const TALES={
+ study:["Her human had a big meeting at nine. At 8:55, Kachori decided every pen on the desk needed testing for gravity. They all passed.",
+  "Desk sorted, meeting saved. Kachori celebrates by walking across the keyboard and typing kkkkkkkk into the chat."],
+ corner:["The cubbies above Corner Desk are exactly Kachori-sized. To prove it, she emptied every one and climbed in. Then out. Then in again.",
+  "Every cubby is full again, which Kachori takes personally. She has already chosen the one she'll empty tomorrow."],
+ reading:["Someone left a cushion on the armchair. Her armchair. Kachori evicted the cushion, then the books, then the candle, just to be clear.",
+  "The armchair is cosy again. The cushion may stay, on the strict understanding that Kachori outranks it."],
+ office:["A parcel arrived at the Home Office. Kachori ignored the expensive things inside and moved into the box. Everything else ended up on the floor.",
+  "The office looks magazine-ready. Kachori is sitting in the empty box. She regrets nothing."],
+ cozy1:["Kachori smelled cream in the teacup and launched a rescue mission. The tea did not survive. Neither did the coffee table.",
+  "Tea for one is served. Kachori would like it noted that it should have been tea for two."],
+ cozy2:["The arc lamp makes a warm spot on the floor. Kachori followed it all afternoon and knocked over everything in its path.",
+  "The lamp is back where it belongs, and so is the warm spot. Kachori is already lying in it."],
+ cozy3:["The curtains moved. Kachori was certain something was behind them. Nothing was behind them. The olive tree took the blame anyway.",
+  "Calm returns. The curtains move again and Kachori pretends not to notice. She noticed."],
+ cozy4:["One loose thread on the chunky knit throw. Kachori pulled it, and the whole evening came apart with it.",
+  "Candles lit, throw folded, and Kachori is purring in the lamplight. Best. Evening. Ever."],
+ pop1:["Kachori has claimed the striped bean bag as her throne. Every cushion on it was treated as a rival and dealt with.",
+  "The throne is restored. Her Majesty accepts the cushions as courtiers, for now."],
+ pop2:["A bird landed outside the big window. Kachori lost her mind and took both side tables down with her.",
+  "The bird is back. Kachori chatters at it from her tidy sunny spot, as is tradition."],
+ pop3:["The blue shelves are just high enough to be a challenge. Kachori made it to the top. The books came back down without her.",
+  "Every book is shelved and Kachori looks very innocent. Suspiciously innocent."],
+ pop4:["Kachori saw herself in the wavy mirror and decided another cat had moved in. The standoff lasted an hour and involved the whole room.",
+  "The other cat has been spoken to. Peace, and colour, return to the kingdom."],
+ kcat1:["Breakfast was two minutes late. Kachori filed a formal complaint by knocking every treat jar off the shelf.",
+  "Bowls full, jars back, K on display. Kachori eats exactly three kibbles and walks away. She has standards."],
+ kcat2:["Kachori gave her cat tree pads one star for being 'too fluffy', then threw them all on the floor.",
+  "Every pad is back on the tree. Kachori tries each one, then naps on the floor. Five stars."],
+ kcat3:["The new pothos looked delicious. The wicker boxes looked climbable. Kachori was right about one of these.",
+  "Plants safe, boxes stacked, paw print framed. Kachori sniffs the pothos one last time, for the record."],
+ kcat4:["It's Kachori's gotcha day, the day she came home. She celebrated by personally redecorating her entire kingdom.",
+  "The kingdom is perfect. Kachori peeks out of her cubby and slow-blinks at you. In cat, that means thank you."],
+ kbow1:["Miss Bun the bunny slept on Kachori's pillow. Kachori took this extremely personally. Pillows were thrown.",
+  "The bed is made and Miss Bun is forgiven. Mostly. Kachori is keeping an eye on her."],
+ kbow2:["Kachori batted one bow on the gallery wall and it wiggled. So she batted all of them, and the cherries, and the hearts.",
+  "The gallery is perfect again. Kachori admires it, especially the frame with the K."],
+ kbow3:["The fairy lights twinkled. Kachori pounced. The fairy lights are fine. The vanity table is not.",
+  "Tulips up, mirrors gleaming, lights twinkling. Kachori checks her bow in the mirror. Flawless."],
+ kbow4:["Tonight is Kachori's birthday sleepover and her room must be perfect. It isn't. She helped.",
+  "Her K pillow, her bow bed, her people. Kachori curls up and purrs herself to sleep. Every corner is tidy. Goodnight, Kachori."]
+};
+LEVELS.forEach(l=>{const t=TALES[l.id];if(t){l.intro=t[0];l.outro=t[1]}l.wins=KWIN});
+
 
 /* ================= play logging (GoatCounter) =================
    Set GC_CODE to your GoatCounter site code to switch logging on.
@@ -687,7 +750,7 @@ function chime(n){const f=PENTA[(n-1)%PENTA.length];blip(f,f*1.004,.32,'sine',.1
 const MEOWS=['Mrrp?','Meow!','Prrrr…','Kachori blinks slowly at you.','She wants the K on display.','Mew.'];
 function meow(){blip(900,560,.28,'triangle',.07);setTimeout(()=>blip(620,780,.16,'triangle',.05),180);toast(MEOWS[Math.floor(Math.random()*MEOWS.length)])}
 /* ================= home ================= */
-function renderHome(){const best=load();$('rooms').innerHTML=COLS.map((c,ci)=>(c.kachori&&!COLS[ci-1].kachori?`<section class="story"><svg viewBox="-40 -105 80 112" aria-hidden="true">${kachori(0,0,1)}</svg><div class="tx"><span class="lvl">New · two rooms, eight levels</span><h2>Kachori's Paradise</h2><p>${KSTORY}</p></div></section>`:'')+`<section class="col"><div class="colhead"><h2>${c.name}</h2><span>${c.sub}</span></div><div class="rooms">`+LEVELS.map((lv,i)=>lv.col!==ci?'':card(lv,i,best)).join('')+`</div></section>`).join('');
+function renderHome(){const best=load();$('rooms').innerHTML=COLS.map((c,ci)=>(c.kachori&&!COLS[ci-1].kachori?`<section class="story"><svg viewBox="-40 -105 80 112" aria-hidden="true">${kachori(0,0,1)}</svg><div class="tx"><span class="lvl">Her own rooms · eight levels</span><h2>Kachori's Paradise</h2><p>${KSTORY}</p></div></section>`:'')+`<section class="col"><div class="colhead"><h2>${c.name}</h2><span>${c.sub}</span></div><div class="rooms">`+LEVELS.map((lv,i)=>lv.col!==ci?'':card(lv,i,best)).join('')+`</div></section>`).join('');
   $('rooms').querySelectorAll('.room').forEach(el=>el.onclick=()=>startLevel(+el.dataset.i))}
 function card(lv,i,best){{const b=best[lv.id];const sc=lv.build();
   const n=sc.slots.filter(s=>!s.bin).length+sc.trash;
@@ -722,8 +785,10 @@ function startLevel(i){
   $('win').hidden=true;$('home').hidden=true;$('game').hidden=false;
   clearInterval(timer);$('clock').textContent='0:00';updateMeter();
   track('start/'+lv.id,'Started: '+lv.name);
-  toast(lv.guided?'Pick something up. Its spot will light up.':'No glowing spots here. Use Hint if you get stuck.');
+  $('iCat').innerHTML=kachori(0,0,1);$('iTier').textContent=lv.tier+' · '+COLS[lv.col].name;$('iTitle').textContent=lv.name;$('iText').textContent=lv.intro||'';
+  $('intro').hidden=!lv.intro;if(!lv.intro)startHint();
 }
+function startHint(){toast(G&&G.lv.guided?'Pick something up. Its spot will light up.':'No glowing spots here. Use Hint if you get stuck.')}
 function updateMeter(){$('fill').style.width=(G.done/G.total*100)+'%';$('count').textContent=`${G.done} / ${G.total} tidy`}
 function startClock(){if(G.running)return;G.running=true;const t0=Date.now()-G.t*1000;timer=setInterval(()=>{G.t=Math.floor((Date.now()-t0)/1000);$('clock').textContent=fmt(G.t)},500)}
 let toastT;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2200)}
@@ -788,7 +853,7 @@ function win(){
   if(!prev||stars>prev.stars||(stars===prev.stars&&G.t<prev.time))best[G.lv.id]={stars,time:G.t};save(best);
   $('wStars').innerHTML=[1,2,3].map(k=>starSVG(stars>=k)).join('');
   $('wTitle').textContent=(G.lv.wins||['','Tidy enough','Looking good','Picture perfect'])[stars];
-  $('wTime').textContent=fmt(G.t);$('wMiss').textContent=G.miss;$('wHint').textContent=G.hints;
+  $('wTale').textContent=G.lv.outro||'';$('wTime').textContent=fmt(G.t);$('wMiss').textContent=G.miss;$('wHint').textContent=G.hints;
   $('wNext').hidden=G.i>=LEVELS.length-1;
   setTimeout(()=>{$('win').hidden=false},1500);
 }
@@ -797,6 +862,7 @@ $('hint').onclick=()=>{if(!G||G.won)return;G.hints++;G.hintOn=true;startClock();
 $('reset').onclick=()=>G&&startLevel(G.i);
 $('sound').onclick=e=>{soundOn=!soundOn;e.currentTarget.textContent=soundOn?'Sound on':'Sound off';e.currentTarget.setAttribute('aria-pressed',soundOn)};
 function goHome(){clearInterval(timer);G=null;$('game').hidden=true;$('home').hidden=false;renderHome()}
+$('iGo').onclick=()=>{$('intro').hidden=true;startHint()};
 $('back').onclick=goHome;$('wRooms').onclick=goHome;
 $('wAgain').onclick=()=>startLevel(G.i);$('wNext').onclick=()=>startLevel(G.i+1);
 {const fs=$('fs');fs.hidden=!(document.fullscreenEnabled&&matchMedia('(pointer:fine)').matches);
@@ -813,6 +879,7 @@ $('wAgain').onclick=()=>startLevel(G.i);$('wNext').onclick=()=>startLevel(G.i+1)
  addEventListener('beforeinstallprompt',e=>{if(!onWeb||standalone)return;e.preventDefault();deferred=e;btn.hidden=false;box.hidden=false});
  btn.onclick=async()=>{if(!deferred)return;deferred.prompt();try{const r=await deferred.userChoice;track('install/'+r.outcome,'Install prompt: '+r.outcome)}catch(e){}deferred=null;btn.hidden=true;box.hidden=true};
  addEventListener('appinstalled',()=>{box.hidden=true;track('installed','App installed')});}
+try{$('mastCat').innerHTML=kachori(0,0,1)}catch(e){}
 renderHome();
 </script>
 
