@@ -353,7 +353,7 @@ function makeItems(lv,sc,view={x0:0,w:600}){const rng=rngOf(lv.seed),items=[];
     if(k==='tree'||k==='arclamp'){const left=rng()<.5;p.r=left?-76:76;p.x=left?300+rng()*150:150+rng()*150;p.y=605+rng()*20}
     if(k==='floorlamp'){const left=rng()<.5;p.r=left?-80:80;p.x=left?270+rng()*170:140+rng()*170;p.y=605+rng()*20}
     const d=IT[k];if(sc.spill&&d.h<=56&&k!=='trash'&&!BIGZ.has(k)&&rng()<.42){const tot=sc.spill.reduce((a,q)=>a+q[1]-q[0],0);let pick=rng()*tot,sp=sc.spill[0];for(const q of sc.spill){if(pick<q[1]-q[0]){sp=q;break}pick-=q[1]-q[0]}p={x:sp[0]+20+rng()*(sp[1]-sp[0]-40),y:sp[2],r:(rng()<.5?-1:1)*(55+rng()*35),s:1};it.surf=sp[2]}
-    else p.x=view.x0+40+rng()*(view.w-80);
+    else{const m=Math.max(40,IT[k].w/2+16);p.x=view.x0+m+rng()*Math.max(0,view.w-2*m)}
     it.pose=p;it.home={...p}});
   items.sort((a,b)=>IT[b.kind].w*IT[b.kind].h-IT[a.kind].w*IT[a.kind].h);
   items.forEach((it,i)=>it.id=i);return items}
@@ -643,7 +643,7 @@ function viewFor(){const st=document.querySelector('.stage'),r=st?st.getBounding
 function applyView(v){svg.setAttribute('viewBox',`${v.x0.toFixed(1)} 0 ${v.w.toFixed(1)} ${v.h.toFixed(1)}`);
   for(const el of [svg.querySelector('#groomClip rect'),svg.querySelector('#vigR')])if(el){el.setAttribute('x',v.x0);el.setAttribute('y',0);el.setAttribute('width',v.w);el.setAttribute('height',v.h)}}
 let rzT=0;addEventListener('resize',()=>{cancelAnimationFrame(rzT);rzT=requestAnimationFrame(()=>{if(!G||$('game').hidden)return;const v=viewFor();G.view=v;applyView(v);
-  G.items.forEach(it=>{if(it.placed||!it.el||G.drag&&G.drag.it===it)return;const nx=Math.max(v.x0+30,Math.min(v.x0+v.w-30,it.pose.x));if(nx!==it.pose.x){it.pose.x=nx;apply(it)}})})});
+  G.items.forEach(it=>{if(it.placed||!it.el||G.drag&&G.drag.it===it)return;const m=Math.max(30,IT[it.kind].w/2+10),nx=Math.max(v.x0+m,Math.min(v.x0+v.w-m,it.pose.x));if(nx!==it.pose.x){it.pose.x=nx;apply(it)}})})});
 let G=null,timer=null;
 const svg=$('svg');
 function startLevel(i){
