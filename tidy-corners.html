@@ -40,14 +40,15 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
 /* ---------- Home ---------- */
 #home{height:100%;overflow-y:auto;padding-block:28px 40px}
-.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
 .mast h1{font-family:var(--f-display);font-weight:400;font-size:clamp(38px,7vw,64px);line-height:1;margin:0;letter-spacing:-.01em;text-wrap:balance}
 .mast h1 span{color:var(--accent)}
 .mast p{margin:10px 0 0;max-width:58ch;color:var(--muted);font-size:16px}
 .how{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0;padding:0;list-style:none;color:var(--muted);font-size:14px}
 .how li{display:flex;align-items:center;gap:8px}
 .how b{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--ink);font-size:12px}
-.rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+.rooms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (min-width:760px){.rooms{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .room{display:flex;flex-direction:column;text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:16px;padding:0;overflow:hidden;cursor:pointer;transition:transform .18s,border-color .18s}
 .room:hover{transform:translateY(-3px);border-color:var(--accent)}
 .room svg{width:100%;height:auto;aspect-ratio:600/640;max-width:100%;display:block;background:var(--stage)}
@@ -65,7 +66,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .colhead span{font-size:14px;color:var(--muted)}
 
 /* ---------- Game ---------- */
-#game{height:100%;display:flex;flex-direction:column;gap:8px;padding-block:10px 12px;max-width:980px;margin:0 auto}
+#game{height:100%;display:flex;flex-direction:column;gap:8px;padding-block:10px 12px;max-width:1680px;margin:0 auto}
 .bar{display:flex;align-items:center;gap:10px}
 .bar .ttl{flex:1;min-width:0}
 .bar h2{font-family:var(--f-display);font-weight:400;font-size:22px;line-height:1.1;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -115,6 +116,13 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
   .room .nm{font-size:16px}
   .room .meta{padding:10px}
 }
+@media (orientation:landscape) and (max-height:560px){
+  #game{gap:6px;padding-block:6px 8px}
+  .bar .sub{display:none}
+  .bar h2{font-size:18px}
+  .tools .btn,.bar .btn{padding:5px 10px;font-size:12px}
+  .clock{padding:4px 8px;font-size:13px}
+}
 @media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
 </style>
 </head>
@@ -148,6 +156,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
     <div class="tools">
       <button class="btn" id="hint">Hint</button>
       <button class="btn" id="sound" aria-pressed="true">Sound on</button>
+      <button class="btn" id="fs" hidden>Full screen</button>
       <button class="btn" id="reset">Restart</button>
     </div>
   </div>
@@ -193,13 +202,14 @@ function grid(x,y,w,h,rows,cols,t,back,frame=F.body){
     cells.push({x:cx+cw/2,y:cy+ch,w:cw,h:ch})}
   return {s,cells}}
 function floatShelf(x,y,w){return R(x+4,y+10,w-8,4,'rgba(0,0,0,.10)')+panel(x,y,w,10)}
+const WX0=-460,WW=1520;
 function room(o){
-  let s=R(0,0,600,545,o.wall)+R(0,0,600,545,'url(#wallShade)');
-  if(o.ceiling){s+=R(0,0,600,24,'#a8774a');for(let x=0;x<600;x+=26)s+=`<line x1="${x}" y1="0" x2="${x}" y2="24" stroke="rgba(0,0,0,.14)"/>`;s+=R(0,22,600,4,'#efece6')}
-  s+=R(0,545,600,100,o.floor);
-  for(let i=-7;i<=7;i++)s+=`<line x1="${300+i*64}" y1="545" x2="${300+i*118}" y2="645" stroke="rgba(0,0,0,.08)" stroke-width="1.2"/>`;
-  for(const y of [565,592,626])s+=`<line x1="0" y1="${y}" x2="600" y2="${y}" stroke="rgba(0,0,0,.07)" stroke-width="1.2"/>`;
-  s+=R(0,535,600,10,o.base||'#d9d2c6')+R(0,545,600,3,'rgba(0,0,0,.08)');
+  let s=R(WX0,0,WW,545,o.wall)+R(WX0,0,WW,545,'url(#wallShade)');
+  if(o.ceiling){s+=R(WX0,0,WW,24,'#a8774a');for(let x=WX0;x<WX0+WW;x+=26)s+=`<line x1="${x}" y1="0" x2="${x}" y2="24" stroke="rgba(0,0,0,.14)"/>`;s+=R(WX0,22,WW,4,'#efece6')}
+  s+=R(WX0,545,WW,420,o.floor);
+  for(let i=-16;i<=16;i++)s+=`<line x1="${300+i*64}" y1="545" x2="${300+i*291}" y2="965" stroke="rgba(0,0,0,.08)" stroke-width="1.2"/>`;
+  for(const y of [565,592,626,668,722,790,872])s+=`<line x1="${WX0}" y1="${y}" x2="${WX0+WW}" y2="${y}" stroke="rgba(0,0,0,.07)" stroke-width="1.2"/>`;
+  s+=R(WX0,535,WW,10,o.base||'#d9d2c6')+R(WX0,545,WW,3,'rgba(0,0,0,.08)');
   return s}
 function curtainWindow(x,w){
   let s=R(x,24,w,500,'#fff3d2')+`<ellipse cx="${x+60}" cy="380" rx="90" ry="150" fill="#fffbe9" opacity=".8"/>`;
@@ -333,7 +343,7 @@ const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const NOSH=new Set(['wallart','trailing','rug']);
 function body(k,v){const d=IT[k];return (NOSH.has(k)?'':`<ellipse cx="0" cy="0" rx="${Math.max(8,d.w*.46)}" ry="3.4" fill="rgba(40,30,20,.16)"/>`)+d.d(v)}
 function hitRect(k){const d=IT[k];const hs=d.hits||[d.hit||[-d.w/2-8,-d.h-8,d.w+16,d.h+16]];return hs.map(h=>`<rect x="${h[0]}" y="${h[1]}" width="${h[2]}" height="${h[3]}" fill="transparent"/>`).join('')}
-function makeItems(lv,sc){const rng=rngOf(lv.seed),items=[];
+function makeItems(lv,sc,view={x0:0,w:600}){const rng=rngOf(lv.seed),items=[];
   sc.slots.forEach(s=>{if(!s.bin)items.push({kind:s.kind,v:s.v||0})});
   for(let t=0;t<sc.trash;t++)items.push({kind:'trash',v:(sc.trashV||0)+t});
   items.forEach(it=>{const k=it.kind;let p={x:60+rng()*480,y:578+rng()*52,r:(rng()-.5)*80,s:1};
@@ -342,8 +352,8 @@ function makeItems(lv,sc){const rng=rngOf(lv.seed),items=[];
     if(k==='rug'){p.r=(rng()-.5)*16;p.x=160+rng()*280;p.y=624}
     if(k==='tree'||k==='arclamp'){const left=rng()<.5;p.r=left?-76:76;p.x=left?300+rng()*150:150+rng()*150;p.y=605+rng()*20}
     if(k==='floorlamp'){const left=rng()<.5;p.r=left?-80:80;p.x=left?270+rng()*170:140+rng()*170;p.y=605+rng()*20}
-    const d=IT[k];if(sc.spill&&d.h<=56&&k!=='trash'&&rng()<.42){const tot=sc.spill.reduce((a,q)=>a+q[1]-q[0],0);let pick=rng()*tot,sp=sc.spill[0];for(const q of sc.spill){if(pick<q[1]-q[0]){sp=q;break}pick-=q[1]-q[0]}p={x:sp[0]+20+rng()*(sp[1]-sp[0]-40),y:sp[2],r:(rng()<.5?-1:1)*(55+rng()*35),s:1};it.surf=sp[2]}
-    else p.x=40+rng()*520;
+    const d=IT[k];if(sc.spill&&d.h<=56&&k!=='trash'&&!BIGZ.has(k)&&rng()<.42){const tot=sc.spill.reduce((a,q)=>a+q[1]-q[0],0);let pick=rng()*tot,sp=sc.spill[0];for(const q of sc.spill){if(pick<q[1]-q[0]){sp=q;break}pick-=q[1]-q[0]}p={x:sp[0]+20+rng()*(sp[1]-sp[0]-40),y:sp[2],r:(rng()<.5?-1:1)*(55+rng()*35),s:1};it.surf=sp[2]}
+    else p.x=view.x0+40+rng()*(view.w-80);
     it.pose=p;it.home={...p}});
   items.sort((a,b)=>IT[b.kind].w*IT[b.kind].h-IT[a.kind].w*IT[a.kind].h);
   items.forEach((it,i)=>it.id=i);return items}
@@ -411,9 +421,9 @@ function boucle(x,y){const c='#f3eee5',d='#e1d8c9';
     R(x+40,y-116,140,44,d,'rx="20"')+R(x+40,y-120,140,40,c,'rx="20"')+R(x+6,y-80,208,62,c,'rx="24"')+dots(x+16,y-76,190,54,40,4,d)+
     R(x+24,y-20,10,20,'#3a332c','rx="2"')+R(x+186,y-20,10,20,'#3a332c','rx="2"')}
 function coffee(cx,y){return R(cx-92,y-70,62,70,'#2f2b28','rx="8"')+R(cx+30,y-70,62,70,'#2f2b28','rx="8"')+R(cx-124,y-94,248,26,'#f4f1ec','rx="13" stroke="#ddd6cb" stroke-width="1.2"')+R(cx-118,y-76,236,5,'rgba(0,0,0,.06)','rx="3"')}
-function sheer(x){let s=R(x,24,600-x,516,'#fdf7e8')+`<ellipse cx="${x+50}" cy="300" rx="42" ry="200" fill="#fff" opacity=".6"/>`;
-  for(let i=0;i<8;i++){const fx=x+8+i*((600-x)/8);s+=`<path d="M${fx.toFixed(1)} 26 C${(fx-5).toFixed(1)} 200 ${(fx+6).toFixed(1)} 380 ${fx.toFixed(1)} 538" stroke="rgba(190,178,158,.35)" stroke-width="6" fill="none"/>`}
-  return s+R(x-6,20,600-x+6,5,'#d8d0c4')}
+function sheer(x){let s=R(x,24,1060-x,516,'#fdf7e8')+`<ellipse cx="${x+50}" cy="300" rx="42" ry="200" fill="#fff" opacity=".6"/>`;
+  for(let i=0;i<38;i++){const fx=x+8+i*((1060-x)/38);s+=`<path d="M${fx.toFixed(1)} 26 C${(fx-5).toFixed(1)} 200 ${(fx+6).toFixed(1)} 380 ${fx.toFixed(1)} 538" stroke="rgba(190,178,158,.35)" stroke-width="6" fill="none"/>`}
+  return s+R(x-6,20,1060-x+6,5,'#d8d0c4')}
 function acUnit(x,y){return `<path d="M${x+20} ${y+30} q-14 30 -6 80" stroke="#e4ded3" stroke-width="5" fill="none"/>`+R(x,y,170,34,'#f7f6f2','rx="6" stroke="#ddd6cb"')+`<line x1="${x+10}" y1="${y+25}" x2="${x+160}" y2="${y+25}" stroke="#cfc8bc" stroke-width="2"/>`}
 function sceneCozy(t){
   const night=t===4;let s=room({wall:night?'#e3d3bf':'#efe6da',floor:'#c8ae8b',base:'#e4d9c9'});
@@ -550,10 +560,10 @@ function catTree(){const w=KC.oak;return R(378,600,194,12,w,'rx="4"')+sisal(412,
 function toyBasket(x,y){let s=`<path d="M${x-28} ${y-40} H${x+28} L${x+24} ${y} H${x-24}Z" fill="#c9a06a"/>`;for(let yy=y-34;yy<y;yy+=6)s+=`<line x1="${x-26}" y1="${yy}" x2="${x+26}" y2="${yy}" stroke="rgba(110,70,30,.3)" stroke-width="1.4"/>`;
   return s+R(x-30,y-43,60,6,'#b88d55','rx="3"')+R(x-9,y-28,18,13,'#fbf7ef','rx="2"')+TXT(x,y-17.5,'TOYS',5,'#7a4a1a')}
 function pinkBin(x,y){return `<path d="M${x-20} ${y-44} H${x+20} L${x+16} ${y} H${x-16} Z" fill="#f6d6dc" stroke="#d99aa6" stroke-width="2"/>`+R(x-22,y-47,44,5,'#e9b2bc','rx="2"')+`<path d="${heartP(x,y-22,5)}" fill="${KC.wine}"/>`}
-function doorway(){return R(0,190,44,350,'#d9d3c5')+R(36,184,12,356,'#faf8f3',EDGE)+R(0,184,48,10,'#faf8f3')+R(562,170,38,375,'#fbfaf6',EDGE)+R(558,166,42,8,'#faf8f3')+`<circle cx="572" cy="380" r="4" fill="#c9a96a"/>`}
+function doorway(){return R(-60,190,104,350,'#d9d3c5')+R(-72,184,12,356,'#faf8f3',EDGE)+R(36,184,12,356,'#faf8f3',EDGE)+R(-72,184,120,10,'#faf8f3')+R(562,170,84,375,'#fbfaf6',EDGE)+R(556,166,96,8,'#faf8f3')+R(646,166,8,379,'#faf8f3',EDGE)+`<circle cx="572" cy="380" r="4" fill="#c9a96a"/>`}
 function vent(x,y){let s=R(x,y,62,34,'#fbfaf6',EDGE)+R(x+6,y+6,50,22,'#3a3f44');for(let i=1;i<9;i++)s+=R(x+6+i*5.5,y+6,1.6,22,'#fbfaf6');return s}
 function sceneCat(t){
-  let s=room({wall:'#ebe7da',floor:'#7f3f2b',base:'#f7f5ef'})+R(0,522,600,23,'#f7f5ef')+doorway()+vent(100,60)+beam(260,380,200,470);
+  let s=room({wall:'#ebe7da',floor:'#7f3f2b',base:'#f7f5ef'})+R(WX0,522,WW,23,'#f7f5ef')+doorway()+vent(100,60)+beam(260,380,200,470);
   s+=`<path d="M86 258 v14 l14 -14Z M374 258 v14 l-14 -14Z" fill="${KC.oakD}"/>`+R(80,250,310,8,KC.oak,'rx="2"')+catTree()+toyBasket(548,636);
   const sl=[{x:200,y:634,w:300,h:48,kind:'gingmat',layer:0},{x:200,y:618,w:96,h:46,kind:'bowls'},{x:110,y:616,w:56,h:96,kind:'feeder'},
     {x:225,y:420,w:84,h:112,kind:'catposter'},{x:165,y:250,w:46,h:62,kind:'jar',v:1},{x:252,y:250,w:42,h:54,kind:'letterK',v:0},{x:110,y:250,w:56,h:44,kind:'trailing'},
@@ -566,8 +576,8 @@ function fairyCurtain(){let s=R(0,24,64,516,'rgba(255,255,255,.75)');for(let i=0
   const r=rngOf(41);for(let i=0;i<22;i++)s+=bowP((6+r()*52).toFixed(1)*1,(50+r()*470).toFixed(1)*1,3.2,KC.wine);
   for(let y=34;y<536;y+=16)for(const x of [3,62]){s+=`<circle cx="${x}" cy="${y}" r="2" fill="#f1e3c2"/><circle class="glow" cx="${x}" cy="${y}" r="4.5" fill="#ffe7a0" fill-opacity=".8"/>`}
   return s+R(0,20,72,5,'#e5ddd2')}
-function bed(){let s=R(392,556,214,46,'#fbf9f6',EDGE)+R(400,600,10,10,'#e2dbd0')+`<path d="M392 556 V472 Q392 452 414 452 H606 V556Z" fill="#fbf6ee"/><path d="M392 540 H606" stroke="#efe6d8" stroke-width="5"/>`;
-  const r=rngOf(55);for(let i=0;i<18;i++)s+=bowP(400+(i%6)*34+r()*10,470+Math.floor(i/6)*28+r()*6,3.6,KC.wine);return s}
+function bed(){let s=R(392,556,346,46,'#fbf9f6',EDGE+' rx="4"')+R(400,600,10,10,'#e2dbd0')+R(720,600,10,10,'#e2dbd0')+`<path d="M392 556 V472 Q392 452 414 452 H716 Q738 452 738 472 V556Z" fill="#fbf6ee"/><path d="M392 540 H738" stroke="#efe6d8" stroke-width="5"/>`;
+  const r=rngOf(55);for(let i=0;i<30;i++)s+=bowP(400+(i%10)*33+r()*8,470+Math.floor(i/10)*28+r()*6,3.6,KC.wine);return s}
 function vanity(){return panel(104,400,194,12)+R(110,412,182,28,'#fbf9f6',EDGE)+handle(201,422,30)+R(112,440,8,105,'#f4f1ec',EDGE)+R(282,440,8,105,'#f4f1ec',EDGE)}
 function sceneBow(t){
   let s=room({wall:'#f6f0ea',floor:'#e9ddd0',base:'#fbf8f4'})+beam(80,220,160,520);
@@ -625,18 +635,28 @@ function card(lv,i,best){{const b=best[lv.id];const sc=lv.build();
   <div class="row"><span class="stars">${[1,2,3].map(k=>starSVG(b&&b.stars>=k)).join('')}</span><span>${b?'Best '+fmt(b.time):'Not played'}</span></div></div></button>`}}
 
 /* ================= game ================= */
+const DEFIDS=['wallShade','beamG','vig','roomClip','warmG','stripeP','checkP','ginghamP','ginghamR'];
+const gid=h=>{for(const n of DEFIDS)h=h.split(`id="${n}"`).join(`id="g${n}"`).split(`url(#${n})`).join(`url(#g${n})`);return h};
+function viewFor(){const st=document.querySelector('.stage'),r=st?st.getBoundingClientRect():{width:0,height:0};
+  if(!r.width||!r.height)return {x0:0,w:600,h:640};const ar=r.width/r.height;let w=600,h=640;
+  if(ar>600/640)w=Math.min(1480,640*ar);else h=Math.min(820,600/ar);return {x0:300-w/2,w,h}}
+function applyView(v){svg.setAttribute('viewBox',`${v.x0.toFixed(1)} 0 ${v.w.toFixed(1)} ${v.h.toFixed(1)}`);
+  for(const el of [svg.querySelector('#groomClip rect'),svg.querySelector('#vigR')])if(el){el.setAttribute('x',v.x0);el.setAttribute('y',0);el.setAttribute('width',v.w);el.setAttribute('height',v.h)}}
+let rzT=0;addEventListener('resize',()=>{cancelAnimationFrame(rzT);rzT=requestAnimationFrame(()=>{if(!G||$('game').hidden)return;const v=viewFor();G.view=v;applyView(v);
+  G.items.forEach(it=>{if(it.placed||!it.el||G.drag&&G.drag.it===it)return;const nx=Math.max(v.x0+30,Math.min(v.x0+v.w-30,it.pose.x));if(nx!==it.pose.x){it.pose.x=nx;apply(it)}})})});
 let G=null,timer=null;
 const svg=$('svg');
 function startLevel(i){
   const lv=LEVELS[i],sc=lv.build();sc.slots.forEach(s=>s.filled=false);
-  const items=makeItems(lv,sc);
-  G={i,lv,sc,items,done:0,total:items.length,miss:0,hints:0,t:0,running:false,won:false,drag:null};
+  $('win').hidden=true;$('home').hidden=true;$('game').hidden=false;const view=viewFor();
+  const items=makeItems(lv,sc,view);
+  G={i,lv,sc,items,view,done:0,total:items.length,miss:0,hints:0,t:0,running:false,won:false,drag:null};
   let ghosts='';sc.slots.forEach((s,si)=>{ghosts+=`<g class="ghost" data-s="${si}"><rect class="zone" x="${s.x-s.w/2}" y="${s.y-s.h}" width="${s.w}" height="${s.h}" rx="8"/>${s.bin?'':`<g class="sil" transform="translate(${s.x} ${s.y})">${IT[s.kind].d(s.v||0)}</g>`}</g>`});
   const warm=sc.slots.filter(s=>GLOW[s.kind]).map(s=>{const g=GLOW[s.kind];return `<ellipse cx="${s.x+g[3]}" cy="${s.y-g[0]}" rx="${g[1]}" ry="${g[2]}" fill="url(#warmG)"/>`}).join('');
   svg.classList.remove('lit');
-  svg.innerHTML=DEFS+`<g clip-path="url(#roomClip)"><g id="furn">${sc.furn}</g><g id="ghosts">${ghosts}</g><g id="p0"></g><g id="p1"></g><g id="front">${sc.front||''}</g><g id="p2"></g><g id="p3"></g><g id="top">${sc.top||''}</g><g id="loose"></g><g id="fx"></g><g id="warm">${warm}</g>`+'<rect width="600" height="640" fill="url(#vig)" pointer-events="none"/></g>';
+  svg.innerHTML=gid(DEFS+`<g clip-path="url(#roomClip)"><g id="furn">${sc.furn}</g><g id="ghosts">${ghosts}</g><g id="p0"></g><g id="p1"></g><g id="front">${sc.front||''}</g><g id="p2"></g><g id="p3"></g><g id="top">${sc.top||''}</g><g id="loose"></g><g id="fx"></g><g id="warm">${warm}</g>`+'<rect id="vigR" width="600" height="640" fill="url(#vig)" pointer-events="none"/></g>');applyView(view);
   const loose=svg.querySelector('#loose');
-  loose.innerHTML=items.map(it=>`<g class="item" data-id="${it.id}" transform="${tf(it.pose)}">${hitRect(it.kind)}${body(it.kind,it.v)}</g>`).join('');
+  loose.innerHTML=gid(items.map(it=>`<g class="item" data-id="${it.id}" transform="${tf(it.pose)}">${hitRect(it.kind)}${body(it.kind,it.v)}</g>`).join(''));
   items.forEach(it=>it.el=loose.querySelector(`[data-id="${it.id}"]`));
   $('gName').textContent=lv.name;$('gSub').textContent=lv.tier+' · '+lv.sub;
   $('win').hidden=true;$('home').hidden=true;$('game').hidden=false;
@@ -666,7 +686,7 @@ svg.addEventListener('pointerdown',e=>{
   if(G.lv.guided||G.hintOn)showGhosts(s=>!s.filled&&s.kind===it.kind&&avail(s));
 });
 svg.addEventListener('pointermove',e=>{const d=G&&G.drag;if(!d||e.pointerId!==d.pid)return;const p=pt(e);
-  d.it.pose.x=Math.max(10,Math.min(590,p.x-d.off.x));d.it.pose.y=Math.max(30,Math.min(660,p.y-d.off.y));apply(d.it)});
+  const v=G.view;d.it.pose.x=Math.max(v.x0+10,Math.min(v.x0+v.w-10,p.x-d.off.x));d.it.pose.y=Math.max(30,Math.min(v.h+20,p.y-d.off.y));apply(d.it)});
 function endDrag(e){const d=G&&G.drag;if(!d||e.pointerId!==d.pid)return;G.drag=null;const it=d.it;it.el.classList.remove('drag');
   const p=pt(e),pad=18;
   const inside=s=>p.x>=s.x-s.w/2-pad&&p.x<=s.x+s.w/2+pad&&p.y>=s.y-s.h-pad&&p.y<=s.y+pad;
@@ -719,6 +739,9 @@ $('sound').onclick=e=>{soundOn=!soundOn;e.currentTarget.textContent=soundOn?'Sou
 function goHome(){clearInterval(timer);G=null;$('game').hidden=true;$('home').hidden=false;renderHome()}
 $('back').onclick=goHome;$('wRooms').onclick=goHome;
 $('wAgain').onclick=()=>startLevel(G.i);$('wNext').onclick=()=>startLevel(G.i+1);
+{const fs=$('fs');fs.hidden=!(document.fullscreenEnabled&&matchMedia('(pointer:fine)').matches);
+  fs.onclick=()=>{try{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen().catch(()=>toast('Full screen is not available here.'))}catch(e){toast('Full screen is not available here.')}};
+  document.addEventListener('fullscreenchange',()=>{fs.textContent=document.fullscreenElement?'Exit full screen':'Full screen'})}
 renderHome();
 </script>
 
