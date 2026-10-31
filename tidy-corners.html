@@ -595,7 +595,7 @@ const KSTORY=`Meet Kachori, a fluffy white princess with blue eyes and a pink bo
 /* ================= play logging (GoatCounter) =================
    Set GC_CODE to your GoatCounter site code to switch logging on.
    It only runs on the public GitHub Pages link, never inside Claude. */
-const GC_CODE='';
+const GC_CODE='tidycorners';
 const GC_ON=!!GC_CODE&&/^https?:$/.test(location.protocol)&&!/claude/i.test(location.hostname);
 if(GC_ON){const sc=document.createElement('script');sc.async=true;sc.src='https://gc.zgo.at/count.js';sc.dataset.goatcounter=`https://${GC_CODE}.goatcounter.com/count`;document.head.appendChild(sc)}
 function track(path,title){if(!GC_ON)return;const go=()=>{try{window.goatcounter.count({path,title:title||path,event:true})}catch(e){}};
