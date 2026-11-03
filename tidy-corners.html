@@ -18,7 +18,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600;700&family=Yatra+One&display=swap">
 <style>
 /* Layout: one-screen app. Home = room picker cards; Game = slim header + tidiness meter + full-bleed room stage */
 :root{
@@ -143,6 +143,19 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
   .tools .btn,.bar .btn{padding:5px 10px;font-size:12px}
   .clock{padding:4px 8px;font-size:13px}
 }
+/* ---------- Diwali look (html.diwali) ---------- */
+:root.diwali{--bg:#f8ecdf;--panel:#fffaf3;--line:#ecd3b8;--accent:#c2410c;--accent-soft:#fde3c4;--stage:#f1e0cc;--muted:#6f5a4c}
+@media (prefers-color-scheme: dark){:root.diwali:not([data-theme="light"]){--bg:#1d1411;--panel:#2a1c17;--line:#4a3328;--accent:#f59e0b;--accent-soft:#3e2a19;--stage:#140d0b;--muted:#bba597;color-scheme:dark}}
+:root.diwali[data-theme="dark"]{--bg:#1d1411;--panel:#2a1c17;--line:#4a3328;--accent:#f59e0b;--accent-soft:#3e2a19;--stage:#140d0b;--muted:#bba597;color-scheme:dark}
+.toranStrip{display:block;width:100%;height:64px;margin-bottom:-8px}
+.dstory{background:linear-gradient(135deg,#7c1d3a,#b4361c 60%,#d97706);color:#fff7ed;border:none}
+.dstory p{color:#fde7cf}.dstory .lvl{color:#fde68a}.dstory h2{color:#fff}
+.dlh{font-family:'Yatra One','Noto Sans Devanagari',serif;font-size:15px;color:#fde68a;display:block;margin-top:4px}
+.flame{transform-box:fill-box;transform-origin:50% 100%;animation:flick 1.1s ease-in-out infinite alternate}
+@keyframes flick{0%{transform:scale(1,1)}50%{transform:scale(.88,1.12)}100%{transform:scale(1.06,.92)}}
+.wheel.spin{animation:whirl .25s linear infinite}
+@keyframes whirl{to{stroke-dashoffset:-20}}
+.cracker:hover{filter:brightness(1.15)}
 @media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
 </style>
 </head>
@@ -150,10 +163,11 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
 <div id="home">
   <div class="wrap">
+    <svg class="toranStrip" id="toranStrip" viewBox="-300 0 1200 64" preserveAspectRatio="xMidYMin slice" aria-hidden="true" hidden></svg>
     <header class="mast">
       <div class="mtx">
         <h1>Tidy <span>Corners</span></h1>
-        <p>Meet Kachori: fluffy, white, pink bow, and one hobby, testing whether things fall off shelves. They always do. Follow her through twenty rooms and put back everything she "tested".</p>
+        <p>Meet Kachori: fluffy, white, pink bow, and one hobby, testing whether things fall off shelves. They always do. Follow her from room to room and put back everything she "tested".</p>
       </div>
       <svg id="mastCat" viewBox="-40 -105 80 112" aria-hidden="true"></svg>
     </header>
@@ -217,6 +231,12 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 </div>
 
 <script>
+/* ===== Seasonal switch =====
+   DIWALI.look   : festive colours, marigold garlands, fireworks, Kachori's marigold collar
+   DIWALI.levels : the two Diwali rooms (8 levels)
+   Set both to false to go back to the normal game. */
+const DIWALI={look:true,levels:true};
+if(DIWALI.look)document.documentElement.classList.add('diwali');
 /* ================= palette & primitives ================= */
 const C={teal:'#4f7c86',clay:'#c7774f',mustard:'#dfae4b',navy:'#3e5168',sage:'#7f9c86',blush:'#e3a99a',
   leaf:'#4f7f45',leafL:'#7fad62',pot:'#efe9df',terra:'#c46d4a',wood:'#c8a27a',woodD:'#9c7550',paper:'#f4f1ea',ink:'#3a3f44'};
@@ -244,6 +264,7 @@ function room(o){
   for(let i=-16;i<=16;i++)s+=`<line x1="${300+i*64}" y1="545" x2="${300+i*291}" y2="965" stroke="rgba(0,0,0,.08)" stroke-width="1.2"/>`;
   for(const y of [565,592,626,668,722,790,872])s+=`<line x1="${WX0}" y1="${y}" x2="${WX0+WW}" y2="${y}" stroke="rgba(0,0,0,.07)" stroke-width="1.2"/>`;
   s+=R(WX0,535,WW,10,o.base||'#d9d2c6')+R(WX0,545,WW,3,'rgba(0,0,0,.08)');
+  if(DIWALI.look&&!o.noFestoon)s+=festoon(o.ceiling?30:6);
   return s}
 function curtainWindow(x,w){
   let s=R(x,24,w,500,'#fff3d2')+`<ellipse cx="${x+60}" cy="380" rx="90" ry="150" fill="#fffbe9" opacity=".8"/>`;
@@ -372,7 +393,7 @@ const $=id=>document.getElementById(id);
 function rngOf(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 const tf=p=>`translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) rotate(${p.r.toFixed(1)}) scale(${p.s.toFixed(3)})`;
 const DEFS=`<defs><linearGradient id="wallShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".05"/><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".04"/></linearGradient>
-<linearGradient id="beamG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff6d8" stop-opacity=".55"/><stop offset="1" stop-color="#fff6d8" stop-opacity="0"/></linearGradient><radialGradient id="vig" cx=".5" cy=".45" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#2a1c10" stop-opacity=".22"/></radialGradient><pattern id="stripeP" width="26" height="10" patternUnits="userSpaceOnUse"><rect width="26" height="10" fill="#f6f3ec"/><rect width="13" height="10" fill="#2a3ea6"/></pattern><pattern id="checkP" width="24" height="12" patternUnits="userSpaceOnUse"><rect width="24" height="12" fill="#f3ecdc"/><rect width="12" height="6" fill="#2f47b5"/><rect x="12" y="6" width="12" height="6" fill="#2f47b5"/></pattern><pattern id="ginghamP" width="14" height="14" patternUnits="userSpaceOnUse"><rect width="14" height="14" fill="#f4ebdc"/><rect width="7" height="14" fill="rgba(176,140,98,.35)"/><rect width="14" height="7" fill="rgba(176,140,98,.35)"/></pattern><pattern id="ginghamR" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#fbeef0"/><rect width="5" height="10" fill="rgba(196,42,60,.45)"/><rect width="10" height="5" fill="rgba(196,42,60,.45)"/></pattern><clipPath id="roomClip"><rect width="600" height="640"/></clipPath><radialGradient id="warmG"><stop offset="0" stop-color="#ffd98a" stop-opacity=".55"/><stop offset="1" stop-color="#ffd98a" stop-opacity="0"/></radialGradient></defs>`;
+<linearGradient id="beamG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff6d8" stop-opacity=".55"/><stop offset="1" stop-color="#fff6d8" stop-opacity="0"/></linearGradient><radialGradient id="vig" cx=".5" cy=".45" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#2a1c10" stop-opacity=".22"/></radialGradient><pattern id="stripeP" width="26" height="10" patternUnits="userSpaceOnUse"><rect width="26" height="10" fill="#f6f3ec"/><rect width="13" height="10" fill="#2a3ea6"/></pattern><pattern id="checkP" width="24" height="12" patternUnits="userSpaceOnUse"><rect width="24" height="12" fill="#f3ecdc"/><rect width="12" height="6" fill="#2f47b5"/><rect x="12" y="6" width="12" height="6" fill="#2f47b5"/></pattern><pattern id="ginghamP" width="14" height="14" patternUnits="userSpaceOnUse"><rect width="14" height="14" fill="#f4ebdc"/><rect width="7" height="14" fill="rgba(176,140,98,.35)"/><rect width="14" height="7" fill="rgba(176,140,98,.35)"/></pattern><pattern id="ginghamR" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#fbeef0"/><rect width="5" height="10" fill="rgba(196,42,60,.45)"/><rect width="10" height="5" fill="rgba(196,42,60,.45)"/></pattern><clipPath id="roomClip"><rect width="600" height="640"/></clipPath><radialGradient id="warmWall" cx=".5" cy=".55" r=".6"><stop offset="0" stop-color="#ffb35c" stop-opacity=".28"/><stop offset="1" stop-color="#ffb35c" stop-opacity="0"/></radialGradient><radialGradient id="warmG"><stop offset="0" stop-color="#ffd98a" stop-opacity=".55"/><stop offset="1" stop-color="#ffd98a" stop-opacity="0"/></radialGradient></defs>`;
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const NOSH=new Set(['wallart','trailing','rug']);
 function body(k,v){const d=IT[k];return (NOSH.has(k)?'':`<ellipse cx="0" cy="0" rx="${Math.max(8,d.w*.46)}" ry="3.4" fill="rgba(40,30,20,.16)"/>`)+d.d(v)}
@@ -382,7 +403,7 @@ function makeItems(lv,sc,view={x0:0,w:600}){const rng=rngOf(lv.seed),items=[];
   for(let t=0;t<sc.trash;t++)items.push({kind:'trash',v:(sc.trashV||0)+t});
   items.forEach(it=>{const k=it.kind;let p={x:60+rng()*480,y:578+rng()*52,r:(rng()-.5)*80,s:1};
     if(['chair','floorplant','beanbag','pouf','sidetable','redtable'].includes(k))p.r=(rng()-.5)*36;
-    if(['shagrug','juterug','checkrug'].includes(k)){p.r=(rng()-.5)*14;p.x=170+rng()*260;p.y=626}
+    if(['shagrug','juterug','checkrug','dhurrie','rangoli'].includes(k)){p.r=(rng()-.5)*14;p.x=170+rng()*260;p.y=626}
     if(k==='rug'){p.r=(rng()-.5)*16;p.x=160+rng()*280;p.y=624}
     if(k==='tree'||k==='arclamp'){const left=rng()<.5;p.r=left?-76:76;p.x=left?300+rng()*150:150+rng()*150;p.y=605+rng()*20}
     if(k==='floorlamp'){const left=rng()<.5;p.r=left?-80:80;p.x=left?270+rng()*170:140+rng()*170;p.y=605+rng()*20}
@@ -723,6 +744,187 @@ const TALES={
   "Her K pillow, her bow bed, her people. Kachori curls up and purrs herself to sleep. Every corner is tidy. Goodnight, Kachori."]
 };
 LEVELS.forEach(l=>{const t=TALES[l.id];if(t){l.intro=t[0];l.outro=t[1]}l.wins=KWIN});
+/* ================================================================
+   DIWALI SEASON — everything festive lives in this block.
+   To revert: set DIWALI.look and/or DIWALI.levels to false (top of script).
+   ================================================================ */
+const DV={marigold:'#f59e0b',saffron:'#ea580c',kumkum:'#be123c',magenta:'#be185d',brass:'#d4a017',brassD:'#a87c12',brassL:'#f4cf5a',clay:'#b45309',clayD:'#7c2d12',leaf:'#3f7d3a',teal:'#0f766e'};
+const DEVA="'Yatra One','Noto Sans Devanagari','Mangal',sans-serif";
+function marigold(x,y,r,c){return `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}"/><circle cx="${x}" cy="${y}" r="${(r*.55).toFixed(1)}" fill="rgba(255,255,255,.18)"/>`}
+function festoon(y0){let s='';const span=120,sag=16;
+  for(let x=WX0;x<WX0+WW;x+=span){s+=`<path d="M${x} ${y0} Q${x+span/2} ${y0+sag*2} ${x+span} ${y0}" stroke="${DV.leaf}" stroke-width="2" fill="none"/>`;
+    for(let k=1;k<10;k++){const t=k/10;s+=marigold((x+span*t).toFixed(1),(y0+(1-(2*t-1)**2)*sag).toFixed(1),5.2,k%2?DV.marigold:DV.saffron)}
+    s+=L(x-6,y0+4,3,9,-40,DV.leaf)+L(x+6,y0+4,3,9,40,DV.leaf);
+    for(let k=0;k<5;k++)s+=marigold(x,y0+6+k*9,4.4,k%2?DV.saffron:DV.marigold);s+=L(x,y0+54,3.4,8,0,DV.leaf)}
+  return s}
+function burst(cx,cy,r,c,delay,once){const n=12;let rays='';for(let i=0;i<n;i++){const a=i/n*Math.PI*2,x=Math.cos(a)*r,y=Math.sin(a)*r;rays+=`<line x1="${(x*.3).toFixed(1)}" y1="${(y*.3).toFixed(1)}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${c}" stroke-width="2" stroke-linecap="round"/><circle cx="${(x*1.08).toFixed(1)}" cy="${(y*1.08).toFixed(1)}" r="1.8" fill="${c}"/>`}
+  const rep=once?'fill="freeze"':'repeatCount="indefinite"',dur=once?'1.6s':'3.2s';
+  return `<g transform="translate(${cx} ${cy})" opacity="0"><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.06;.55;1" dur="${dur}" begin="${delay}s" ${rep}/><g><animateTransform attributeName="transform" type="scale" values=".15;1;1.08" keyTimes="0;.4;1" dur="${dur}" begin="${delay}s" ${rep}/>${rays}</g></g>`}
+function fireworks(){if(RM||!G)return;const fx=svg.querySelector('#fx');if(!fx)return;const v=G.view,cols=['#f59e0b','#ec4899','#facc15','#38bdf8','#f97316','#a3e635'];let h='';
+  for(let i=0;i<9;i++)h+=burst((v.x0+v.w*(.1+.8*Math.random())).toFixed(0),(70+Math.random()*190).toFixed(0),26+Math.random()*22,cols[i%cols.length],(i*.22).toFixed(2),true);
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.innerHTML=h;fx.appendChild(g);setTimeout(()=>g.remove(),4200);
+  setTimeout(()=>{blip(300,90,.35,'sawtooth',.03);setTimeout(()=>blip(1200,1800,.2,'triangle',.03),200)},300)}
+/* Kachori's festive marigold collar */
+{const _k=kachori;kachori=function(x,y,sc,peek){const h=_k(x,y,sc,peek);if(!DIWALI.look)return h;
+  const fl=[-11,-6,6,11].map((dx,i)=>marigold(dx,-35.5+Math.abs(dx)*-.05+(Math.abs(dx)>8?-1:1.2),2.6,i%2?DV.saffron:DV.marigold)).join('');
+  return h.replace('<circle cx="0" cy="-32" r="4" fill="#e6b84a"/>',fl+'<circle cx="0" cy="-32" r="4" fill="#e6b84a"/>')}}
+
+/* ---------- Diwali items ---------- */
+Object.assign(IT,{
+ diya:{w:36,h:34,d:v=>{const band=[DV.kumkum,DV.teal,DV.marigold][v%3];return `<circle class="glow" cx="15" cy="-22" r="16" fill="#ffd27a" fill-opacity=".7"/>`+
+   `<path d="M-17 -12 Q-15 0 0 0 Q15 0 17 -12 Q0 -7 -17 -12Z" fill="${DV.clay}"/><path d="M12 -12 L22 -15 L15 -8Z" fill="${DV.clay}"/><path d="M-14 -6 Q0 0 14 -6" stroke="${band}" stroke-width="2.4" fill="none"/>`+
+   [-9,-3,3,9].map(x=>`<circle cx="${x}" cy="-3.6" r="1.1" fill="#fde68a"/>`).join('')+`<ellipse cx="0" cy="-11.5" rx="15" ry="2.8" fill="${DV.clayD}"/>`+
+   `<g class="flame"><path d="M19 -15 q-6 -8 0 -19 q6 10 0 19Z" fill="${DV.marigold}"/><path d="M19 -16 q-3 -5 0 -11 q3 6 0 11Z" fill="#fef3c7"/></g>`}},
+ rangoli:{w:236,h:62,d:()=>{let s=`<ellipse cx="0" cy="-30" rx="116" ry="29" fill="#fef3c7"/><ellipse cx="0" cy="-30" rx="110" ry="26" fill="${DV.magenta}"/><ellipse cx="0" cy="-30" rx="94" ry="22" fill="${DV.marigold}"/>`;
+   for(let i=0;i<16;i++){const a=i/16*Math.PI*2;s+=L((Math.cos(a)*78).toFixed(1),(-30+Math.sin(a)*18).toFixed(1),11,4.2,(a*180/Math.PI).toFixed(0),i%2?'#2563eb':DV.kumkum)}
+   s+=`<ellipse cx="0" cy="-30" rx="62" ry="14" fill="#16a34a"/><ellipse cx="0" cy="-30" rx="48" ry="11" fill="#fef3c7"/>`;
+   for(let i=0;i<8;i++){const a=i/8*Math.PI*2;s+=L((Math.cos(a)*30).toFixed(1),(-30+Math.sin(a)*7).toFixed(1),10,3.4,(a*180/Math.PI).toFixed(0),DV.saffron)}
+   s+=`<ellipse cx="0" cy="-30" rx="10" ry="3.2" fill="${DV.kumkum}"/>`;for(let i=0;i<36;i++){const a=i/36*Math.PI*2;s+=`<circle cx="${(Math.cos(a)*103).toFixed(1)}" cy="${(-30+Math.sin(a)*24).toFixed(1)}" r="1.5" fill="#fff"/>`}return s}},
+ toran:{w:214,h:76,d:()=>{let s=R(-104,-76,208,6,'#7a4a24','rx="3"');for(let x=-98;x<=98;x+=9)s+=marigold(x,-66,5,(x/9|0)%2?DV.saffron:DV.marigold);
+   for(let i=0;i<12;i++){const x=-94+i*17;s+=`<path d="M${x} -62 q-6 14 0 28 q6 -14 0 -28Z" fill="${i%2?DV.leaf:'#5a9a4b'}"/>`}
+   [-80,-40,0,40,80].forEach((x,i)=>{const n=i%2?4:6;for(let k=0;k<n;k++)s+=marigold(x,-56+k*9,4.4,k%2?DV.marigold:DV.saffron);s+=`<path d="M${x-3} ${-56+n*9} l3 8 l3 -8Z" fill="${DV.kumkum}"/>`});return s}},
+ garlandV:{w:22,h:196,hit:[-16,-200,32,204],d:()=>{let s=`<line x1="0" y1="-196" x2="0" y2="-8" stroke="${DV.leaf}" stroke-width="1.6"/>`;for(let k=0;k<20;k++)s+=marigold(0,-190+k*9.2,5,k%3===2?'#fff7ed':k%2?DV.saffron:DV.marigold);
+   return s+`<path d="M-4 -8 L0 2 L4 -8Z" fill="${DV.kumkum}"/>`+L(-6,-196,3,8,-30,DV.leaf)+L(6,-196,3,8,30,DV.leaf)}},
+ kandil:{w:70,h:100,d:v=>{if(v%2){let s=`<circle class="glow" cx="0" cy="-58" r="34" fill="#ffd27a" fill-opacity=".75"/><path d="M0 -100 v8" stroke="#7a4a24" stroke-width="2"/><path d="M-20 -92 H20 L30 -70 L20 -40 H-20 L-30 -70Z" fill="${DV.teal}"/><path d="M-12 -88 H12 L18 -70 L12 -44 H-12 L-18 -70Z" fill="#fde68a"/><path d="M-30 -70 H30" stroke="${DV.brass}" stroke-width="2"/>`;
+     for(let i=0;i<7;i++)s+=`<path d="M${-18+i*6} -40 q-3 18 1 36" stroke="${i%2?DV.magenta:DV.marigold}" stroke-width="3" fill="none"/>`;return s}
+   let pts='';for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2?15:32;pts+=`${(Math.cos(a)*r).toFixed(1)},${(-62+Math.sin(a)*r).toFixed(1)} `}
+   let s=`<circle class="glow" cx="0" cy="-62" r="38" fill="#ffd27a" fill-opacity=".75"/><path d="M0 -100 v8" stroke="#7a4a24" stroke-width="2"/><polygon points="${pts}" fill="#dc2626"/><circle cx="0" cy="-62" r="12" fill="#fde68a"/><polygon points="${pts}" fill="none" stroke="${DV.brassL}" stroke-width="1.6"/>`;
+   for(let i=0;i<5;i++)s+=`<path d="M${-10+i*5} -38 q-3 18 1 34" stroke="${[DV.marigold,'#16a34a',DV.magenta][i%3]}" stroke-width="3" fill="none"/>`;return s}},
+ thali:{w:66,h:22,d:()=>`<ellipse cx="0" cy="-6" rx="31" ry="7" fill="${DV.brassD}"/><ellipse cx="0" cy="-8" rx="31" ry="7" fill="${DV.brass}"/><ellipse cx="0" cy="-8.5" rx="25" ry="5" fill="${DV.brassL}"/>`+
+   `<path d="M-6 -9 Q-6 -4 0 -4 Q6 -4 6 -9Z" fill="${DV.clay}"/><path d="M5 -10 q-3 -5 0 -10 q3 5 0 10Z" fill="${DV.marigold}"/><circle cx="-16" cy="-10" r="3.2" fill="${DV.kumkum}"/><circle cx="-9" cy="-12" r="2.6" fill="#facc15"/><circle cx="15" cy="-10" r="3.6" fill="${DV.saffron}"/><circle cx="20" cy="-7" r="2.6" fill="#fff"/>`},
+ urli:{w:98,h:34,d:()=>{let s=`<path d="M-46 -20 Q-40 2 0 2 Q40 2 46 -20Z" fill="${DV.brassD}"/><ellipse cx="0" cy="-20" rx="47" ry="9" fill="${DV.brass}"/><ellipse cx="0" cy="-20" rx="41" ry="7" fill="#7dd3fc"/>`;
+   [[-24,-21,DV.marigold],[-8,-18,DV.kumkum],[10,-22,DV.saffron],[26,-19,'#fde68a'],[-30,-17,'#f9a8d4']].forEach(([x,y,c])=>{s+=marigold(x,y,4.6,c)});
+   return s+`<path d="M2 -16 q-2 -4 1 -7" stroke="${DV.clayD}" stroke-width="2"/><path d="M3 -24 q-3 -5 0 -10 q3 5 0 10Z" fill="${DV.marigold}"/>`}},
+ samai:{w:40,h:124,d:()=>{let s=`<circle class="glow" cx="0" cy="-104" r="28" fill="#ffd27a" fill-opacity=".7"/><ellipse cx="0" cy="-4" rx="18" ry="5" fill="${DV.brassD}"/><path d="M-16 -6 Q-12 -18 -4 -22 H4 Q12 -18 16 -6Z" fill="${DV.brass}"/>`+R(-3,-92,6,70,DV.brass)+
+   [-40,-60,-80].map(y=>`<ellipse cx="0" cy="${y}" rx="6" ry="3.4" fill="${DV.brassL}"/>`).join('')+`<path d="M-20 -94 Q0 -86 20 -94 Q0 -100 -20 -94Z" fill="${DV.brass}"/>`;
+   [-14,-5,5,14].forEach(x=>s+=`<g class="flame"><path d="M${x} -96 q-4 -6 0 -13 q4 7 0 13Z" fill="${DV.marigold}"/></g>`);return s+`<circle cx="0" cy="-114" r="5" fill="${DV.brassL}"/><path d="M-2 -118 q2 -8 6 -6" stroke="${DV.brass}" stroke-width="2" fill="none"/>`}},
+ mithai:{w:60,h:34,d:v=>{const box=R(-28,-22,56,22,v%3===1?'#fde7f0':'#fff7ed','rx="2" stroke="#e8c9a3"');
+   if(v%3===0){let s=box;[[-16,-24],[-4,-24],[8,-24],[20,-24],[-10,-32],[2,-32],[14,-32],[-4,-40],[8,-40]].forEach(([x,y])=>s+=`<circle cx="${x}" cy="${y}" r="6" fill="#f59e0b"/><circle cx="${x-2}" cy="${y-2}" r="1.6" fill="#fde68a"/>`);return s+R(-28,-6,56,6,DV.kumkum)}
+   if(v%3===1){let s=box;for(let r=0;r<2;r++)for(let c=0;c<4;c++){const x=-19+c*13+(r?6:0),y=-26-r*7;s+=`<path d="M${x} ${y-5} l6 5 l-6 5 l-6 -5Z" fill="#e7e5e4" stroke="#a8a29e" stroke-width=".8"/>`}return s+R(-28,-6,56,6,DV.magenta)}
+   return R(-28,-30,56,30,DV.magenta,'rx="2"')+R(-28,-30,56,7,'#9d174d','rx="2"')+R(-4,-30,8,30,DV.brassL)+bowP(0,-31,8,DV.brassL)+TXT(0,-9,'MITHAI',6.5,'#fff')}},
+ gift:{w:48,h:52,d:v=>{const [c,r]=[[DV.magenta,DV.brassL],[DV.teal,'#f9a8d4'],[DV.brass,DV.kumkum],['#7c3aed','#facc15']][v%4];
+   return R(-22,-36,44,36,c,'rx="2"')+R(-24,-42,48,9,c,'rx="2"')+R(-24,-42,48,3,'rgba(255,255,255,.2)')+R(-4,-42,8,42,r)+bowP(0,-44,9,r)}},
+ footprints:{w:84,h:26,d:()=>{const foot=(x,flip)=>`<g transform="translate(${x} -12) scale(${flip?-1:1} 1) rotate(-8)"><ellipse cx="0" cy="2" rx="5.5" ry="9" fill="${DV.kumkum}"/>`+[[-4,-9,2.2],[-1,-11,2],[2,-11,1.8],[4.5,-9.5,1.6],[6,-7,1.4]].map(([a,b,r])=>`<circle cx="${a}" cy="${b}" r="${r}" fill="${DV.kumkum}"/>`).join('')+`</g>`;
+   const paw=`<g transform="translate(30 -8)"><ellipse cx="0" cy="0" rx="4" ry="3.2" fill="#e98fa2"/>`+[[-4,-5],[-1.4,-6.6],[1.4,-6.6],[4,-5]].map(([a,b])=>`<circle cx="${a}" cy="${b}" r="1.5" fill="#e98fa2"/>`).join('')+`</g>`;
+   return foot(-24,0)+foot(-8,1)+paw+`<g transform="translate(-22 -32) scale(.9)"></g>`}},
+ lights:{w:300,h:44,d:()=>{let s=`<path d="M-150 -40 Q-75 -4 0 -40 Q75 -4 150 -40" stroke="#3f3f46" stroke-width="1.6" fill="none"/>`;const cs=['#f59e0b','#ec4899','#22c55e','#38bdf8','#facc15'];
+   for(let i=0;i<=20;i++){const t=i/20,seg=t<.5?t*2:(t-.5)*2,x=-150+t*300,y=-40+36*(1-(2*seg-1)**2)*.5;s+=`<circle class="glow" cx="${x.toFixed(1)}" cy="${(y+5).toFixed(1)}" r="7" fill="${cs[i%5]}" fill-opacity=".5"/><ellipse cx="${x.toFixed(1)}" cy="${(y+5).toFixed(1)}" rx="2.6" ry="3.6" fill="${cs[i%5]}"/>`}return s}},
+ shubh:{w:62,h:42,d:v=>R(-30,-42,60,42,'#7a1d1d','rx="6"')+R(-26,-38,52,34,DV.kumkum,'rx="4" stroke="'+DV.brassL+'" stroke-width="1.6"')+`<text x="0" y="-13" text-anchor="middle" font-family="${DEVA}" font-size="17" fill="${DV.brassL}">${v%2?'लाभ':'शुभ'}</text>`+marigold(-30,-21,4.6,DV.marigold)+marigold(30,-21,4.6,DV.marigold)},
+ bolster:{w:66,h:30,d:v=>{const c=v%2?DV.teal:DV.magenta;return R(-32,-28,64,28,c,'rx="14"')+[-18,0,18].map(x=>R(x-1.5,-28,3,28,DV.brassL)).join('')+`<ellipse cx="-30" cy="-14" rx="5" ry="13" fill="${DV.brassD}"/><ellipse cx="30" cy="-14" rx="5" ry="13" fill="${DV.brassD}"/>`}},
+ dhurrie:{w:320,h:50,d:()=>{let s=`<path d="M-160 0 H160 L136 -46 H-136Z" fill="#b91c1c"/>`;[[-6,DV.marigold],[-14,'#7c2d12'],[-24,DV.brassL],[-34,'#7c2d12'],[-41,DV.marigold]].forEach(([y,c])=>{const k=(46+y)/46;s+=`<path d="M${-160+24*(1-k)} ${y} H${160-24*(1-k)}" stroke="${c}" stroke-width="3"/>`});
+   for(let x=-150;x<=150;x+=10)s+=`<line x1="${x}" y1="0" x2="${x}" y2="5" stroke="#fca5a5" stroke-width="1.6"/>`;return s}}
+});
+{const pD=IT.pillow.d;IT.pillow.d=v=>{if(v<10)return pD(v);const c=[DV.magenta,DV.teal,DV.saffron][v%3];const sh=`M-27 0 Q-31 -23 -25 -44 Q0 -49 25 -44 Q31 -23 27 0 Q0 4 -27 0Z`;
+  return `<path d="${sh}" fill="${c}"/><path d="M-21 -6 Q-24 -23 -19 -38 Q0 -42 19 -38 Q24 -23 21 -6 Q0 -3 -21 -6Z" fill="none" stroke="${DV.brassL}" stroke-width="2"/>`+[[-10,-28],[10,-28],[0,-20],[-10,-14],[10,-14]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2.4" fill="#e5e7eb" stroke="${DV.brassL}" stroke-width=".8"/>`).join('')}}
+{const kD=IT.letterK.d;IT.letterK.d=v=>v!==2?kD(v):`<path d="M-15 0 V-46 H-5 V-27 L8 -46 H20 L4 -24 L20 0 H8 L-2 -17 L-5 -13 V0 Z" fill="${DV.brass}" stroke="${DV.brassD}" stroke-width="1"/><path d="M-13 -44 V-2" stroke="rgba(255,255,255,.45)" stroke-width="2"/>`+marigold(-10,-2,4,DV.saffron)+marigold(14,-2,4,DV.marigold)}
+{const tD=IT.trash.d;IT.trash.d=v=>{if(v<20)return tD(v);const k=v%3;
+  if(k===0)return `<path d="M-11 -2 L-13 -11 L-6 -18 L4 -19 L12 -12 L10 -3 L2 0Z" fill="#d1d5db" stroke="#9ca3af" stroke-width="1.2"/><path d="M-6 -12 L3 -7 L7 -14" stroke="#f3f4f6" fill="none"/>`;
+  if(k===1)return `<line x1="-14" y1="-2" x2="12" y2="-16" stroke="#9ca3af" stroke-width="1.8"/><line x1="4" y1="-11.6" x2="12" y2="-16" stroke="#3f3f46" stroke-width="3.2" stroke-linecap="round"/>`;
+  return `<path d="M-12 -3 L-8 -16 L9 -14 L12 -2Z" fill="#dc2626"/><path d="M-8 -12 L9 -10" stroke="${DV.brassL}" stroke-width="2"/>`}}
+['rangoli','dhurrie','toran','garlandV','kandil','lights','shubh','footprints'].forEach(k=>NOSH.add(k));
+['rangoli','dhurrie','samai'].forEach(k=>BIGZ.add(k));
+Object.assign(GLOW,{diya:[22,80,70,15],samai:[104,120,110,0],kandil:[60,140,130,0],lights:[26,220,70,0]});
+
+/* ---------- Diwali rooms ---------- */
+function niche(cx,top,w,h){const x=cx-w/2;return `<path d="M${x} ${top+h} V${top+w/2} A${w/2} ${w/2} 0 0 1 ${x+w} ${top+w/2} V${top+h}Z" fill="#d9ab78"/><path d="M${x+4} ${top+h} V${top+w/2} A${w/2-4} ${w/2-4} 0 0 1 ${x+w-4} ${top+w/2} V${top+h}Z" fill="#c99560"/>`+R(x-6,top+h,w+12,6,'#e8c9a3',EDGE)}
+function woodDoor(){let s=R(192,192,216,353,'#5c3317')+R(204,204,96,341,'#8b4f23')+R(300,204,96,341,'#7f4720');
+  [[214,220],[310,220],[214,360],[310,360]].forEach(([x,y])=>{s+=R(x,y,76,120,'#74411c','rx="4"')+R(x+8,y+8,60,104,'#8b4f23','rx="3"')+`<path d="M${x+38} ${y+24} l14 36 l-14 36 l-14 -36Z" fill="#74411c"/>`});
+  for(let y=214;y<540;y+=40)s+=`<circle cx="206" cy="${y}" r="2.4" fill="${DV.brassL}"/><circle cx="394" cy="${y}" r="2.4" fill="${DV.brassL}"/>`;
+  return s+`<circle cx="291" cy="390" r="6" fill="${DV.brass}"/><circle cx="309" cy="390" r="6" fill="${DV.brass}"/>`+R(176,541,248,10,'#e8d5bd',EDGE)}
+function benchLow(){return R(18,470,178,12,'#7a4a24','rx="2"')+R(18,482,178,6,'#5c3317')+R(28,488,10,57,'#5c3317')+R(176,488,10,57,'#5c3317')}
+function cord(x,y1,y2){return `<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="#5c3317" stroke-width="1.6"/><circle cx="${x}" cy="${y2}" r="2.6" fill="${DV.brass}"/>`}
+function sceneDoor(t){
+  let s=room({wall:'#f3dcc0',floor:'#c98f5a',base:'#e8c9a3',noFestoon:true})+beam(440,560,330,600)+cord(500,0,132);
+  if(t>=4)s+=cord(100,0,132);
+  s+=woodDoor()+niche(110,316,64,76)+niche(490,316,64,76)+benchLow()+bin(560,636);
+  const sl=[{x:300,y:646,w:240,h:64,kind:'rangoli',layer:0},{x:300,y:278,w:220,h:80,kind:'toran'},{x:175,y:612,w:40,h:38,kind:'diya',v:0},{x:425,y:612,w:40,h:38,kind:'diya',v:1},
+    {x:300,y:570,w:90,h:30,kind:'footprints',layer:1},{x:42,y:470,w:42,h:52,kind:'letterK',v:2},{x:560,y:636,w:80,h:86,kind:'trash',bin:true}];
+  if(t>=2)sl.push({x:190,y:404,w:26,h:200,kind:'garlandV'},{x:410,y:404,w:26,h:200,kind:'garlandV'},{x:110,y:392,w:40,h:38,kind:'diya',v:2},{x:490,y:392,w:40,h:38,kind:'diya',v:0},
+    {x:500,y:232,w:74,h:104,kind:'kandil',v:0},{x:100,y:470,w:62,h:26,kind:'thali'});
+  if(t>=3)sl.push({x:150,y:300,w:66,h:46,kind:'shubh',v:0},{x:450,y:300,w:66,h:46,kind:'shubh',v:1},{x:500,y:606,w:100,h:38,kind:'urli'},{x:575,y:556,w:44,h:128,kind:'samai'},{x:160,y:470,w:56,h:38,kind:'mithai',v:0});
+  if(t>=4)sl.push({x:300,y:132,w:304,h:48,kind:'lights'},{x:100,y:232,w:74,h:104,kind:'kandil',v:1},{x:440,y:556,w:50,h:54,kind:'gift',v:0},{x:395,y:556,w:50,h:54,kind:'gift',v:2},
+    {x:205,y:644,w:40,h:38,kind:'diya',v:1},{x:395,y:644,w:40,h:38,kind:'diya',v:2});
+  return {furn:s+WINGS.door(),top:kachori(108,642,.86)+crackers([['anar',228,548],['anar',372,548],['chakri',470,640]]),trash:[1,2,2,3][t-1],trashV:20,binMsg:'That is festival rubbish. It goes in the bin.',spill:[[30,190,470]],slots:sl}}
+function nightWindow(x,y,w,h){let s=`<defs><linearGradient id="nightG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e1b4b"/><stop offset="1" stop-color="#6d28d9"/></linearGradient></defs>`+R(x-10,y-10,w+20,h+20,'#7a4a24')+R(x,y,w,h,'url(#nightG)');
+  const r=rngOf(77);for(let i=0;i<22;i++)s+=`<circle cx="${(x+6+r()*(w-12)).toFixed(1)}" cy="${(y+6+r()*(h*.6)).toFixed(1)}" r="${(.6+r()*1.2).toFixed(1)}" fill="#fff" opacity=".8"/>`;
+  s+=`<path d="M${x} ${y+h} V${y+h-40} l20 -18 l16 10 l24 -28 l22 20 l18 -8 l20 14 l26 -22 l20 18 V${y+h}Z" fill="#111827" opacity=".85"/>`;
+  [[x+50,y+60,24,'#f472b6',0],[x+130,y+90,30,'#facc15',1.1],[x+90,y+150,20,'#38bdf8',2.1]].forEach(([cx,cy,rr,c,d])=>s+=RM?'':burst(cx,cy,rr,c,d,false));
+  return s+R(x+w/2-3,y,6,h,'#7a4a24')+R(x,y+h*.45,w,5,'#7a4a24')+R(x-18,y+h+10,w+36,10,'#e8c9a3',EDGE)}
+function diwan(){return R(296,546,300,10,'#5c3317')+R(306,556,12,40,'#5c3317')+R(574,556,12,40,'#5c3317')+R(296,478,300,70,'#9f1239','rx="6"')+R(296,478,300,8,'#be185d','rx="4"')+
+  `<path d="M300 520 H592" stroke="${DV.brassL}" stroke-width="2" stroke-dasharray="6 4"/>`+R(296,532,300,14,'#881337')}
+function chowki(cx,y){return R(cx-96,y-64,192,16,'#7a4a24','rx="3"')+R(cx-96,y-48,192,5,'#5c3317')+R(cx-86,y-43,14,43,'#5c3317')+R(cx+72,y-43,14,43,'#5c3317')+`<path d="M${cx-60} ${y-40} q60 18 120 0" stroke="${DV.brass}" stroke-width="2" fill="none"/>`}
+function sceneNight(t){
+  let s=room({wall:'#33505f',floor:'#5c3a28',base:'#2a4250',noFestoon:true})+`<rect x="${WX0}" y="0" width="${WW}" height="545" fill="url(#warmWall)"/>`+nightWindow(64,120,192,290)+cord(160,120,166);
+  s+=floatShelf(400,300,196)+diwan();
+  const sl=[{x:380,y:478,w:62,h:56,kind:'pillow',v:10},{x:445,y:478,w:62,h:56,kind:'pillow',v:11},{x:110,y:420,w:40,h:38,kind:'diya',v:0},{x:210,y:420,w:40,h:38,kind:'diya',v:1},
+    {x:160,y:266,w:74,h:104,kind:'kandil',v:0},{x:330,y:646,w:324,h:54,kind:'dhurrie',layer:0},{x:520,y:300,w:42,h:52,kind:'letterK',v:2},{x:40,y:636,w:80,h:86,kind:'trash',bin:true}];
+  if(t>=2)sl.push({x:510,y:478,w:62,h:56,kind:'pillow',v:12},{x:286,y:576,w:62,h:40,kind:'mithai',v:1},{x:378,y:576,w:100,h:38,kind:'urli'},{x:110,y:614,w:52,h:56,kind:'gift',v:0},{x:160,y:420,w:40,h:38,kind:'diya',v:2});
+  if(t>=3)sl.push({x:325,y:478,w:62,h:34,kind:'bolster',v:0},{x:568,y:478,w:62,h:34,kind:'bolster',v:1},{x:430,y:118,w:304,h:48,kind:'lights'},{x:440,y:300,w:40,h:38,kind:'diya',v:1},{x:572,y:300,w:60,h:40,kind:'mithai',v:2},{x:168,y:614,w:52,h:56,kind:'gift',v:1});
+  if(t>=4)sl.push({x:282,y:548,w:44,h:128,kind:'samai'},{x:470,y:612,w:52,h:56,kind:'gift',v:3},{x:480,y:300,w:66,h:26,kind:'thali'},{x:600,y:640,w:52,h:56,kind:'gift',v:2});
+  return {furn:s+WINGS.night(),front:chowki(330,640),top:kachori(545,642,.86)+crackers([['rocket',254,420],['anar',212,642],['chakri',420,648]]),trash:[1,2,2,3][t-1],trashV:20,binMsg:'That is festival rubbish. It goes in the bin.',spill:[[240,420,576],[300,590,478]],slots:sl}}
+ART.diya=(x,y,w,h)=>R(x,y,w,h,'#7c2d12')+`<g transform="translate(${x+w/2} ${y+h*.82}) scale(${(w/44).toFixed(2)})">${IT.diya.d(0)}</g>`;
+ART.rangoli=(x,y,w,h)=>{let s=R(x,y,w,h,'#fff7ed');const cx=x+w/2,cy=y+h/2,r=Math.min(w,h)*.42;for(let i=0;i<8;i++){const a=i/8*Math.PI*2;s+=L((cx+Math.cos(a)*r*.55).toFixed(1),(cy+Math.sin(a)*r*.55).toFixed(1),r*.4,r*.16,(a*180/Math.PI).toFixed(0),i%2?DV.magenta:DV.marigold)}return s+`<circle cx="${cx}" cy="${cy}" r="${r*.22}" fill="#16a34a"/>`};
+function hangLamp(x,y,v){return cord(x,0,y-96)+`<g transform="translate(${x} ${y})">${IT.kandil.d(v)}</g>`}
+Object.assign(WINGS,{
+ door:()=>artFrame(-110,300,64,84,DV.brass,'diya')+artFrame(-200,268,52,64,'#7a4a24','rangoli')+hangLamp(-330,240,1)+pampas(-90,548)+`<g transform="translate(-260 548)">${IT.urli.d()}</g>`+
+   artFrame(700,300,64,84,'#7a4a24','rangoli')+artFrame(790,268,52,64,DV.brass,'diya')+hangLamp(930,240,0)+pampas(700,548)+`<g transform="translate(880 548)">${IT.samai.d()}</g>`,
+ night:()=>artFrame(-100,300,64,84,DV.brass,'rangoli')+artFrame(-190,268,52,64,'#7a4a24','diya')+hangLamp(-320,240,0)+`<g transform="translate(-250 548)">${IT.gift.d(1)}</g><g transform="translate(-200 548)">${IT.gift.d(3)}</g>`+
+   artFrame(690,290,64,84,'#7a4a24','diya')+artFrame(780,258,52,64,DV.brass,'rangoli')+hangLamp(920,240,1)+`<g transform="translate(700 548)">${IT.samai.d()}</g>`
+});
+if(DIWALI.levels){
+  COLS.push({name:"Kachori's Diwali Doorstep",sub:'Rangoli, diyas and a marigold toran',diwali:true},{name:"Kachori's Diwali Night",sub:'Silk cushions, mithai and fireworks outside',diwali:true});
+  const ci=COLS.length-2;
+  [['Rangoli Morning','A rangoli, two diyas and the toran'],['Garlands Up','Marigolds, niches and a sky lantern'],['Shubh Labh','Plaques, a brass urli and the samai'],['Lakshmi Puja','Every diya lit for the evening']]
+    .forEach(([n,sb],i)=>LEVELS.push({id:'dwd'+(i+1),col:ci,name:n,sub:sb,build:()=>sceneDoor(i+1),seed:503+i*7,guided:i<2,tier:TIERS[i],wins:KWIN}));
+  [['First Lights','Diyas on the sill and a kandil'],['Mithai Thief','Sweets, an urli and the first gift'],['Fireworks','Bolsters, fairy lights and more gifts'],['Happy Diwali','The whole room, ready for family']]
+    .forEach(([n,sb],i)=>LEVELS.push({id:'dwn'+(i+1),col:ci+1,name:n,sub:sb,build:()=>sceneNight(i+1),seed:607+i*9,guided:i<2,tier:TIERS[i],wins:KWIN}));
+  Object.assign(TALES,{
+   dwd1:["It's Kachori's first Diwali. The rangoli, the diyas and the toran were laid out by the front door, ready to go. Kachori decided they were a bed.",
+    "The doorstep glows. Next to Lakshmi's footprints there's a set of tiny paw prints. Nobody has the heart to wipe them off."],
+   dwd2:["Marigold garlands swing when you bat them. Kachori has discovered this, and the front door is now completely undecorated.",
+    "Garlands up, lantern lit, diyas glowing in their niches. Kachori bats one marigold, just one, for old times' sake."],
+   dwd3:["Kachori heard the word 'mithai' and took the doorstep apart looking for it. She found the brass urli instead and drank from it.",
+    "Shubh on the left, labh on the right, and a very satisfied cat in the middle. She did find the mithai. Don't ask."],
+   dwd4:["Guests arrive in an hour for Lakshmi puja. Kachori has inspected every gift box from the inside.",
+    "Every diya is lit and the doorstep is ready for Lakshmi. Kachori sits by the rangoli like she planned the whole thing."],
+   dwn1:["At dusk the first diyas went on the window sill. Kachori tried to catch the flames, so now they're on the floor. Unlit, luckily.",
+    "The sill glows and the kandil sways in the window. Kachori watches the flames from a very respectful distance."],
+   dwn2:["The kaju katli box was open for one second. One second was enough.",
+    "Mithai restored, minus two pieces. Kachori is licking her paws and studying the ceiling."],
+   dwn3:["The first firecracker went off outside and Kachori shot under the diwan, taking every cushion with her.",
+    "Cushions back, lights up. Kachori watches the fireworks through the window, safely, paws tucked in."],
+   dwn4:["Family is on the way, the lights are on, and the room looks like a cushion exploded. Kachori would like you to know it wasn't her. It was her.",
+    "Happy Diwali from Kachori! The room glows, fireworks bloom outside, and one white cat is purring in the middle of it all."]});
+  LEVELS.forEach(l=>{const t=TALES[l.id];if(t&&!l.intro){l.intro=t[0];l.outro=t[1]}});
+}
+const DSTORY=`It's Kachori's first Diwali. Diyas are tiny suns, marigold garlands are clearly toys, and the fireworks outside are deeply suspicious. Help her get the house ready for the festival of lights.`;
+/* ---------- Tappable firecrackers (Diwali levels) ---------- */
+function crackers(list){return list.map(([type,x,y])=>{let b='';
+  if(type==='anar')b=`<path d="M-9 0 L-6 -22 H6 L9 0Z" fill="#dc2626"/><path d="M-8 -8 H8 M-7 -15 H7" stroke="${DV.brassL}" stroke-width="2"/>`+R(-6,-26,12,5,'#fde68a','rx="1"')+`<path d="M0 -26 q2 -4 4 -6" stroke="#3f3f46" stroke-width="1.4" fill="none"/>`;
+  if(type==='chakri')b=`<ellipse cx="0" cy="-5" rx="15" ry="5.5" fill="none" stroke="#16a34a" stroke-width="5"/><ellipse class="wheel" cx="0" cy="-5" rx="15" ry="5.5" fill="none" stroke="#facc15" stroke-width="5" stroke-dasharray="5 5"/><circle cx="0" cy="-5" r="2.6" fill="#7c2d12"/>`;
+  if(type==='rocket')b=`<path d="M-7 0 Q-9 -14 -4 -20 V-26 H4 V-20 Q9 -14 7 0Z" fill="rgba(74,160,110,.6)" stroke="#2f6b48"/><g class="rk"><line x1="0" y1="-14" x2="0" y2="-52" stroke="#a16207" stroke-width="1.6"/><path d="M-4 -52 V-66 L0 -74 L4 -66 V-52Z" fill="#dc2626"/><path d="M-4 -58 H4" stroke="${DV.brassL}" stroke-width="2"/></g>`;
+  return `<g class="cracker" data-type="${type}" data-x="${x}" data-y="${y}" transform="translate(${x} ${y})" style="cursor:pointer"><rect x="-20" y="${type==='rocket'?-78:-34}" width="40" height="${type==='rocket'?82:38}" fill="transparent"/>${b}</g>`}).join('')}
+const PART=[];let partRaf=0;
+function spark(x,y,vx,vy,c,life,r){const fx=svg.querySelector('#fx');if(!fx)return;const e=document.createElementNS('http://www.w3.org/2000/svg','circle');e.setAttribute('r',r||1.8);e.setAttribute('fill',c);fx.appendChild(e);
+  PART.push({e,x,y,vx,vy,life,max:life});if(!partRaf)partRaf=requestAnimationFrame(stepP)}
+function stepP(){for(let i=PART.length-1;i>=0;i--){const p=PART[i];p.life--;p.vy+=.12;p.x+=p.vx;p.y+=p.vy;
+  if(p.life<=0||!p.e.isConnected){p.e.remove();PART.splice(i,1);continue}p.e.setAttribute('cx',p.x.toFixed(1));p.e.setAttribute('cy',p.y.toFixed(1));p.e.setAttribute('opacity',(p.life/p.max).toFixed(2))}
+  partRaf=PART.length?requestAnimationFrame(stepP):0}
+function crackle(n){for(let i=0;i<n;i++)setTimeout(()=>blip(1800+Math.random()*2200,700,.03,'square',.018),i*110+Math.random()*60)}
+const SCARED=['Kachori flattens her ears.','Kachori pretends she was not startled.','Kachori has left the room. Briefly.','Kachori stares at you. Disappointed.','Kachori puffs up to twice her size.'];
+function ignite(el){if(el.dataset.busy)return;el.dataset.busy='1';const t=el.dataset.type,x=+el.dataset.x,y=+el.dataset.y,gold=['#facc15','#fde68a','#f59e0b','#fff','#fb923c'];
+  const run=(ms,fn)=>{const t0=performance.now();const iv=setInterval(()=>{const k=(performance.now()-t0)/ms;if(k>=1||!el.isConnected){clearInterval(iv);return}if(!RM)fn(k)},30)};
+  const done=ms=>setTimeout(()=>{delete el.dataset.busy},ms);
+  if(t==='anar'){crackle(14);run(1700,()=>{for(let i=0;i<3;i++)spark(x,y-26,(Math.random()-.5)*2.6,-(3.2+Math.random()*3.4),gold[i%5],36+Math.random()*24)});done(2400)}
+  if(t==='chakri'){const w=el.querySelector('.wheel');w.classList.add('spin');crackle(18);let a=0;
+    run(1900,()=>{a+=.9;for(let i=0;i<2;i++){const th=a+i*Math.PI;spark(x+Math.cos(th)*15,y-5+Math.sin(th)*5.5,-Math.sin(th)*3.2,Math.cos(th)*1.2-1.4,gold[(i+2)%5],22)}});
+    setTimeout(()=>w.classList.remove('spin'),1900);done(2400)}
+  if(t==='rocket'){const rk=el.querySelector('.rk'),top=Math.max(70,y-300);blip(400,1600,.6,'sawtooth',.03);const t0=performance.now();
+    (function fly(){const k=Math.min(1,(performance.now()-t0)/650);const dy=-(y-top)*k*k;rk.setAttribute('transform',`translate(0 ${dy.toFixed(1)})`);if(!RM)spark(x,y-14+dy,(Math.random()-.5)*.8,1.2,gold[(Math.random()*5)|0],18,1.4);
+      if(k<1&&el.isConnected)requestAnimationFrame(fly);else{rk.setAttribute('opacity','0');blip(140,40,.5,'sawtooth',.08);crackle(8);
+        const fx=svg.querySelector('#fx');if(fx&&!RM){const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.innerHTML=burst(x,top,42,['#ec4899','#38bdf8','#facc15'][(Math.random()*3)|0],0,true)+burst(x,top,24,'#fff',.15,true);fx.appendChild(g);setTimeout(()=>g.remove(),2200)}
+        setTimeout(()=>{rk.removeAttribute('transform');rk.removeAttribute('opacity')},2200)}})();done(2600)}
+  if(Math.random()<.6)setTimeout(()=>toast(SCARED[(Math.random()*SCARED.length)|0]),500)}
 
 
 /* ================= play logging (GoatCounter) =================
@@ -750,7 +952,12 @@ function chime(n){const f=PENTA[(n-1)%PENTA.length];blip(f,f*1.004,.32,'sine',.1
 const MEOWS=['Mrrp?','Meow!','Prrrr…','Kachori blinks slowly at you.','She wants the K on display.','Mew.'];
 function meow(){blip(900,560,.28,'triangle',.07);setTimeout(()=>blip(620,780,.16,'triangle',.05),180);toast(MEOWS[Math.floor(Math.random()*MEOWS.length)])}
 /* ================= home ================= */
-function renderHome(){const best=load();$('rooms').innerHTML=COLS.map((c,ci)=>(c.kachori&&!COLS[ci-1].kachori?`<section class="story"><svg viewBox="-40 -105 80 112" aria-hidden="true">${kachori(0,0,1)}</svg><div class="tx"><span class="lvl">Her own rooms · eight levels</span><h2>Kachori's Paradise</h2><p>${KSTORY}</p></div></section>`:'')+`<section class="col"><div class="colhead"><h2>${c.name}</h2><span>${c.sub}</span></div><div class="rooms">`+LEVELS.map((lv,i)=>lv.col!==ci?'':card(lv,i,best)).join('')+`</div></section>`).join('');
+function renderHome(){const best=load();const order=COLS.map((c,i)=>i);if(DIWALI.look)order.sort((a,b)=>(COLS[b].diwali?1:0)-(COLS[a].diwali?1:0));
+  const strip=$('toranStrip');if(strip){strip.toggleAttribute('hidden',!DIWALI.look);if(DIWALI.look&&!strip.innerHTML)strip.innerHTML=festoon(4)}
+  $('rooms').innerHTML=order.map((ci,idx)=>{const c=COLS[ci],prev=idx?COLS[order[idx-1]]:null;let pre='';
+    if(c.kachori&&!(prev&&prev.kachori))pre=`<section class="story"><svg viewBox="-40 -105 80 112" aria-hidden="true">${kachori(0,0,1)}</svg><div class="tx"><span class="lvl">Her own rooms · eight levels</span><h2>Kachori's Paradise</h2><p>${KSTORY}</p></div></section>`;
+    if(c.diwali&&!(prev&&prev.diwali))pre=`<section class="story dstory"><svg viewBox="-40 -105 80 112" aria-hidden="true">${kachori(0,0,1)}<g transform="translate(26 0) scale(.7)">${IT.diya.d(0)}</g></svg><div class="tx"><span class="lvl">New for Diwali · two rooms, eight levels</span><h2>Kachori's First Diwali</h2><span class="dlh">शुभ दीपावली</span><p>${DSTORY}</p></div></section>`;
+    return pre+`<section class="col"><div class="colhead"><h2>${c.name}</h2><span>${c.sub}</span></div><div class="rooms">`+LEVELS.map((lv,i)=>lv.col!==ci?'':card(lv,i,best)).join('')+`</div></section>`}).join('');
   $('rooms').querySelectorAll('.room').forEach(el=>el.onclick=()=>startLevel(+el.dataset.i))}
 function card(lv,i,best){{const b=best[lv.id];const sc=lv.build();
   const n=sc.slots.filter(s=>!s.bin).length+sc.trash;
@@ -758,7 +965,7 @@ function card(lv,i,best){{const b=best[lv.id];const sc=lv.build();
   <div class="row"><span class="stars">${[1,2,3].map(k=>starSVG(b&&b.stars>=k)).join('')}</span><span>${b?'Best '+fmt(b.time):'Not played'}</span></div></div></button>`}}
 
 /* ================= game ================= */
-const DEFIDS=['wallShade','beamG','vig','roomClip','warmG','stripeP','checkP','ginghamP','ginghamR'];
+const DEFIDS=['warmWall','nightG','wallShade','beamG','vig','roomClip','warmG','stripeP','checkP','ginghamP','ginghamR'];
 const gid=h=>{for(const n of DEFIDS)h=h.split(`id="${n}"`).join(`id="g${n}"`).split(`url(#${n})`).join(`url(#g${n})`);return h};
 function viewFor(){const st=document.querySelector('.stage'),r=st?st.getBoundingClientRect():{width:0,height:0};
   if(!r.width||!r.height)return {x0:0,w:600,h:640};const ar=r.width/r.height;let w=600,h=640;
@@ -788,7 +995,7 @@ function startLevel(i){
   $('iCat').innerHTML=kachori(0,0,1);$('iTier').textContent=lv.tier+' · '+COLS[lv.col].name;$('iTitle').textContent=lv.name;$('iText').textContent=lv.intro||'';
   $('intro').hidden=!lv.intro;if(!lv.intro)startHint();
 }
-function startHint(){toast(G&&G.lv.guided?'Pick something up. Its spot will light up.':'No glowing spots here. Use Hint if you get stuck.')}
+function startHint(){if(G&&/^dw/.test(G.lv.id)){toast('Tip: tap the firecrackers. Kachori will not approve.');setTimeout(()=>G&&!G.drag&&toast(G.lv.guided?'Pick something up. Its spot will light up.':'No glowing spots here. Use Hint if you get stuck.'),2600);return}toast(G&&G.lv.guided?'Pick something up. Its spot will light up.':'No glowing spots here. Use Hint if you get stuck.')}
 function updateMeter(){$('fill').style.width=(G.done/G.total*100)+'%';$('count').textContent=`${G.done} / ${G.total} tidy`}
 function startClock(){if(G.running)return;G.running=true;const t0=Date.now()-G.t*1000;timer=setInterval(()=>{G.t=Math.floor((Date.now()-t0)/1000);$('clock').textContent=fmt(G.t)},500)}
 let toastT;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2200)}
@@ -802,7 +1009,7 @@ const ghostEl=si=>svg.querySelector(`.ghost[data-s="${si}"]`);
 function showGhosts(pred){G.sc.slots.forEach((s,si)=>ghostEl(si).classList.toggle('show',pred(s)))}
 
 svg.addEventListener('pointerdown',e=>{
-  if(!G)return;if(e.target.closest('.kat')){meow();return}if(G.won)return;const el=e.target.closest('.item');if(!el)return;
+  if(!G)return;if(e.target.closest('.kat')){meow();return}{const ck=e.target.closest('.cracker');if(ck){ignite(ck);return}}if(G.won)return;const el=e.target.closest('.item');if(!el)return;
   const it=G.items[+el.dataset.id];if(it.placed)return;
   e.preventDefault();svg.setPointerCapture(e.pointerId);startClock();
   const p=pt(e);G.drag={it,off:{x:p.x-it.pose.x,y:p.y-it.pose.y},pid:e.pointerId};
@@ -846,6 +1053,7 @@ function sparkle(x,y){const fx=svg.querySelector('#fx');if(RM)return;let h='';
   const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.innerHTML=h;fx.appendChild(g);setTimeout(()=>g.remove(),600)}
 function win(){
   G.won=true;clearInterval(timer);G.hintOn=false;showGhosts(()=>false);
+  if(DIWALI.look)setTimeout(fireworks,900);
   setTimeout(()=>{svg.classList.add('lit');blip(523,784,.25,'sine',.1);setTimeout(()=>blip(784,1046,.3,'sine',.08),180)},250);
   const pen=G.miss+G.hints,stars=pen<=1?3:pen<=4?2:1;levelsDone++;
   track('finish/'+G.lv.id,`Finished: ${G.lv.name}`);track('finish-time/'+bucket(G.t),'Room time: '+bucket(G.t));

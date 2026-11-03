@@ -1,5 +1,5 @@
 // Tidy Corners offline support. Pages load fresh when online and from cache when offline.
-const CACHE = 'tidy-corners-v2';
+const CACHE = 'tidy-corners-v3';
 const CORE = ['./', './index.html', './tidy-corners.html', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png', './icons/favicon-32.png'];
 
