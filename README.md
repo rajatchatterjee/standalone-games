@@ -21,4 +21,4 @@ const DIWALI={look:true,levels:true};
 - `look`: festive colours, marigold garlands, fireworks on finishing a room, Kachori's marigold collar
 - `levels`: the two Diwali rooms (8 levels) with tappable firecrackers
 
-Set both to `false` to go back to the normal game. The tag `before-diwali` marks the last version without any Diwali code.
+Set both to `false` to go back to the normal game. Commit `4e53954` is the last version without any Diwali code.
